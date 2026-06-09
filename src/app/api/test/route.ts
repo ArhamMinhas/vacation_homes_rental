@@ -1,14 +1,8 @@
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const { data, error } =
-    await supabaseAdmin
-      .from("properties")
-      .select("*");
-
-  return NextResponse.json({
-    data,
-    error
-  });
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.from("properties").select("*");
+  return NextResponse.json({ data, error });
 }

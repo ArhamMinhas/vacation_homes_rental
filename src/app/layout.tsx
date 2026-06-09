@@ -1,19 +1,19 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from "next"
+import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Vacation Homes Rental",
-  description: "Vacation homes rental website with booking system",
-};
+  title: "StayFinder — Vacation Homes Rental",
+  description: "Find and book your perfect vacation home",
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
+      <body suppressHydrationWarning>{children}</body>
     </html>
-  );
+  )
 }

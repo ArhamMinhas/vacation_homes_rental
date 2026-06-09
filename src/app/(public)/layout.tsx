@@ -1,16 +1,16 @@
-import Navbar from "@/components/common/Navbar";
-import Footer from "@/components/common/Footer";
+import Navbar from "@/components/common/Navbar"
+import Footer from "@/components/common/Footer"
 
 export default function PublicLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <>
       <Navbar />
-      {children}
+      <main className="page-enter">{children}</main>
       <Footer />
     </>
-  );
+  )
 }
