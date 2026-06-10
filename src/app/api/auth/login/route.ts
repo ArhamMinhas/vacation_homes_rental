@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { loginSchema } from "@/validations/auth.schema"
-import { signInUser, getProfileById } from "@/services/auth.service"
+import { loginUser, getProfileById } from "@/services/auth.service"
 
 export async function POST(request: Request) {
   try {
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     const { email, password } = parsed.data
     const isAdminLogin = body.isAdminLogin === true
 
-    const data = await signInUser(email, password)
+    const data = await loginUser(email, password)
 
     if (!data.user) {
       return NextResponse.json(

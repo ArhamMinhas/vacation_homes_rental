@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { registerSchema } from "@/validations/auth.schema"
-import { signUpUser } from "@/services/auth.service"
+import { registerUser } from "@/services/auth.service"
 
 export async function POST(request: Request) {
   try {
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     }
 
     const { email, password, fullName } = parsed.data
-    const data = await signUpUser({ email, password, fullName })
+    const data = await registerUser(email, password, fullName)
 
     if (!data.user) {
       return NextResponse.json(

@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { ShieldCheck, CreditCard, HeadphonesIcon, ArrowRight, Star, MapPin } from "lucide-react"
-import { createClient } from "@/lib/supabase/server"
+import { getFilteredProperties } from "@/services/property.service"
 import PropertyCard from "@/components/property/PropertyCard"
 import PropertyFilters from "@/components/property/PropertyFilters"
 import { Button } from "@/components/ui/button"
@@ -9,14 +9,8 @@ import type { Property } from "@/types/property"
 
 async function getFeaturedProperties(): Promise<Property[]> {
   try {
-    const supabase = await createClient()
-    const { data } = await supabase
-      .from("properties")
-      .select("*")
-      .eq("is_active", true)
-      .order("created_at", { ascending: false })
-      .limit(6)
-    return (data as Property[]) ?? []
+    const all = await getFilteredProperties()
+    return all.slice(0, 6)
   } catch {
     return []
   }
@@ -98,7 +92,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── Featured Properties ───────────────────────────── */}
-      <section className="py-16 sm:py-20 px-4 bg-background">
+      <section id="properties" className="py-16 sm:py-20 px-4 bg-background scroll-mt-16">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-10">
             <div>

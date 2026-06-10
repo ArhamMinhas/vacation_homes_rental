@@ -4,9 +4,6 @@ export interface Property {
   description: string
   property_type: string
   location: string
-  city: string
-  country: string
-  address: string | null
   price_per_night: number
   cleaning_fee: number
   bedrooms: number
@@ -17,4 +14,5 @@ export interface Property {
   is_active: boolean
   created_at: string
   updated_at: string
+  created_by: string | null
 }

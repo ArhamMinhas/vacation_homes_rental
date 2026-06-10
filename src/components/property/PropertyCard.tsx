@@ -60,7 +60,7 @@ export default function PropertyCard({ property, className }: PropertyCardProps)
           </h3>
           <div className="flex items-center gap-1 mt-1 text-muted-foreground text-sm">
             <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
-            <span className="truncate">{property.city}, {property.country}</span>
+            <span className="truncate">{property.location}</span>
           </div>
         </div>
 

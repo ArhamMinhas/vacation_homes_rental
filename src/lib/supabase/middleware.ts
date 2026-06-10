@@ -27,9 +27,14 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: Do not add any code between createServerClient and getUser().
   // A subtle bug can occur if the session is not refreshed correctly.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    // Network timeout or Supabase unreachable — treat as unauthenticated,
+    // allow the request through rather than crashing every route.
+  }
 
   return { supabaseResponse, user, supabase }
 }
