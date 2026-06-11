@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ROUTES } from "@/lib/constants"
+import { cn } from "@/lib/utils"
 
 interface LoginFormProps {
   isAdmin?: boolean
@@ -104,13 +105,14 @@ export default function LoginForm({ isAdmin = false }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
       {displayError && (
-        <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3">
-          <p className="text-sm text-destructive font-medium">{displayError}</p>
+        <div className="rounded-xl bg-destructive/8 border border-destructive/20 px-4 py-3 flex items-start gap-2.5">
+          <span className="text-destructive mt-px flex-shrink-0">⚠</span>
+          <p className="text-sm text-destructive font-medium leading-relaxed">{displayError}</p>
         </div>
       )}
 
-      <div className="space-y-2">
-        <Label htmlFor="email">Email address</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="email" className="text-sm font-semibold text-foreground">Email address</Label>
         <Input
           id="email"
           type="email"
@@ -118,15 +120,18 @@ export default function LoginForm({ isAdmin = false }: LoginFormProps) {
           autoComplete="email"
           disabled={isLoading}
           {...register("email")}
-          className={errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
+          className={cn(
+            "h-11 rounded-xl border-border/70 bg-muted/30 focus-visible:bg-background transition-colors",
+            errors.email ? "border-destructive focus-visible:ring-destructive" : "focus-visible:border-primary/60"
+          )}
         />
         {errors.email && (
-          <p className="text-xs text-destructive">{errors.email.message}</p>
+          <p className="text-xs text-destructive flex items-center gap-1"><span>⚠</span>{errors.email.message}</p>
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="password" className="text-sm font-semibold text-foreground">Password</Label>
         <div className="relative">
           <Input
             id="password"
@@ -135,27 +140,32 @@ export default function LoginForm({ isAdmin = false }: LoginFormProps) {
             autoComplete="current-password"
             disabled={isLoading}
             {...register("password")}
-            className={
+            className={cn(
+              "h-11 rounded-xl pr-10 border-border/70 bg-muted/30 focus-visible:bg-background transition-colors",
               errors.password
-                ? "border-destructive focus-visible:ring-destructive pr-10"
-                : "pr-10"
-            }
+                ? "border-destructive focus-visible:ring-destructive"
+                : "focus-visible:border-primary/60"
+            )}
           />
           <button
             type="button"
             onClick={() => setShowPassword((p) => !p)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-0.5"
             tabIndex={-1}
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
         {errors.password && (
-          <p className="text-xs text-destructive">{errors.password.message}</p>
+          <p className="text-xs text-destructive flex items-center gap-1"><span>⚠</span>{errors.password.message}</p>
         )}
       </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
+      <Button
+        type="submit"
+        className="w-full h-11 rounded-xl font-semibold text-base shadow-md hover:shadow-lg hover:-translate-y-px transition-all duration-200"
+        disabled={isLoading}
+      >
         {isLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -169,8 +179,8 @@ export default function LoginForm({ isAdmin = false }: LoginFormProps) {
       {!isAdmin && (
         <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link href={ROUTES.REGISTER} className="font-medium text-primary hover:underline">
-            Create one
+          <Link href={ROUTES.REGISTER} className="font-semibold text-primary hover:text-primary/80 transition-colors">
+            Create one →
           </Link>
         </p>
       )}

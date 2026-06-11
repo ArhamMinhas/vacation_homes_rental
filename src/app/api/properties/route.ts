@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { getFilteredProperties, createProperty } from "@/services/property.service"
 import { propertySchema } from "@/validations/property.schema"
+import { logger } from "@/lib/logger"
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
     const property = await createProperty(parsed.data, user.id)
     return NextResponse.json({ property }, { status: 201 })
   } catch (e) {
-    console.error("[POST /api/properties]", e)
+    logger.error("[POST /api/properties]", { error: String(e) })
     const msg = e instanceof Error ? e.message : "Failed to create property"
     return NextResponse.json({ error: msg }, { status: 500 })
   }

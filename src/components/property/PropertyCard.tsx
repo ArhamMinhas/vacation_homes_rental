@@ -1,5 +1,7 @@
+"use client"
+
 import Link from "next/link"
-import { MapPin, BedDouble, Bath, Users, Star } from "lucide-react"
+import { MapPin, BedDouble, Bath, Users, Heart } from "lucide-react"
 import type { Property } from "@/types/property"
 import { ROUTES } from "@/lib/constants"
 import { cn } from "@/lib/utils"
@@ -17,14 +19,27 @@ function formatPrice(price: number) {
   }).format(price)
 }
 
+const TYPE_BADGE: Record<string, string> = {
+  Villa: "bg-violet-600/90",
+  Apartment: "bg-blue-600/90",
+  Cabin: "bg-amber-700/90",
+  "Beach House": "bg-cyan-600/90",
+  Cottage: "bg-emerald-700/90",
+  Penthouse: "bg-slate-700/90",
+  Farmhouse: "bg-lime-700/90",
+  Studio: "bg-indigo-600/90",
+}
+
 export default function PropertyCard({ property, className }: PropertyCardProps) {
   const primaryImage = property.images?.[0]
+  const typeBadge = TYPE_BADGE[property.property_type] ?? "bg-gray-700/90"
 
   return (
     <Link
       href={ROUTES.PROPERTY_DETAIL(property.id)}
       className={cn(
-        "group block bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-200",
+        "group block bg-card rounded-2xl overflow-hidden border border-border/70",
+        "shadow-card hover:shadow-card-hover hover:-translate-y-1.5 transition-all duration-300",
         className
       )}
     >
@@ -35,62 +50,83 @@ export default function PropertyCard({ property, className }: PropertyCardProps)
           <img
             src={primaryImage}
             alt={property.title}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
           />
         ) : (
-          <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
-            <span className="text-4xl">🏡</span>
+          <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
+            <span className="text-5xl">🏡</span>
           </div>
         )}
 
-        {/* Property type badge */}
+        {/* Gradient vignette for overlay text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+        {/* Property type badge — top left */}
         <div className="absolute top-3 left-3">
-          <span className="inline-block bg-background/90 backdrop-blur-sm text-foreground text-xs font-medium px-2.5 py-1 rounded-full border border-border/50">
+          <span
+            className={cn(
+              "inline-block text-white text-[11px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm shadow-sm",
+              typeBadge
+            )}
+          >
             {property.property_type}
           </span>
+        </div>
+
+        {/* Wishlist button — appears on hover */}
+        <button
+          className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 hover:bg-white hover:scale-110 transition-all duration-200"
+          onClick={(e) => e.preventDefault()}
+          aria-label="Save to wishlist"
+        >
+          <Heart className="h-3.5 w-3.5 text-foreground/70" />
+        </button>
+
+        {/* Price pill — bottom right of image */}
+        <div className="absolute bottom-3 right-3">
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl px-3 py-1.5 shadow-sm">
+            <span className="text-sm font-bold text-foreground leading-none">
+              {formatPrice(property.price_per_night)}
+            </span>
+            <span className="text-[11px] text-muted-foreground"> /night</span>
+          </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-3">
-        {/* Title & location */}
-        <div>
-          <h3 className="font-semibold text-foreground text-base leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+      <div className="p-4">
+        <div className="mb-3">
+          <h3 className="font-semibold text-foreground text-[15px] leading-snug line-clamp-1 group-hover:text-primary transition-colors duration-200">
             {property.title}
           </h3>
-          <div className="flex items-center gap-1 mt-1 text-muted-foreground text-sm">
-            <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
-            <span className="truncate">{property.location}</span>
+          <div className="flex items-center gap-1 mt-1 text-muted-foreground">
+            <MapPin className="h-3 w-3 flex-shrink-0" />
+            <span className="text-xs truncate">{property.location}</span>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <BedDouble className="h-3.5 w-3.5" />
-            {property.bedrooms} {property.bedrooms === 1 ? "bed" : "beds"}
-          </span>
-          <span className="flex items-center gap-1">
-            <Bath className="h-3.5 w-3.5" />
-            {property.bathrooms} {property.bathrooms === 1 ? "bath" : "baths"}
-          </span>
-          <span className="flex items-center gap-1">
-            <Users className="h-3.5 w-3.5" />
-            {property.max_guests} guests
-          </span>
-        </div>
+        <div className="h-px bg-border/60 mb-3" />
 
-        {/* Price */}
-        <div className="flex items-center justify-between pt-1 border-t border-border">
-          <div>
-            <span className="text-base font-bold text-foreground">
-              {formatPrice(property.price_per_night)}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3.5 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <BedDouble className="h-3.5 w-3.5 text-primary/70" />
+              {property.bedrooms} {property.bedrooms === 1 ? "bed" : "beds"}
             </span>
-            <span className="text-sm text-muted-foreground"> / night</span>
+            <span className="flex items-center gap-1.5">
+              <Bath className="h-3.5 w-3.5 text-primary/70" />
+              {property.bathrooms} {property.bathrooms === 1 ? "bath" : "baths"}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Users className="h-3.5 w-3.5 text-primary/70" />
+              {property.max_guests}
+            </span>
           </div>
-          <span className="text-xs text-muted-foreground">
-            +{formatPrice(property.cleaning_fee)} cleaning
-          </span>
+          {property.cleaning_fee > 0 && (
+            <span className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0">
+              +{formatPrice(property.cleaning_fee)} cleaning
+            </span>
+          )}
         </div>
       </div>
     </Link>

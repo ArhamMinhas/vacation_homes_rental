@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { getBookingById, updateBookingStatus, cancelBooking } from "@/services/booking.service"
 import { checkConfirmedBookingOverlap } from "@/services/availability.service"
 import { formatDate } from "@/utils/formatDate"
+import { logger } from "@/lib/logger"
 import type { BookingStatus } from "@/types/booking"
 
 const VALID_STATUSES: BookingStatus[] = ["pending", "confirmed", "cancelled", "rejected"]
@@ -88,7 +89,7 @@ export async function PATCH(
     await cancelBooking(id, user.id)
     return NextResponse.json({ success: true })
   } catch (e) {
-    console.error("[PATCH /api/bookings/:id]", e)
+    logger.error("[PATCH /api/bookings/:id]", { error: String(e) })
     const msg = e instanceof Error ? e.message : "Failed to update booking"
     return NextResponse.json({ error: msg }, { status: 500 })
   }

@@ -74,9 +74,11 @@ export default function Navbar() {
   }
 
   const isAdmin = role === "admin"
-  // "Properties" scrolls to the featured section on the homepage; from other
-  // pages it navigates to the homepage and then jumps to that section.
-  const navLinks = [{ href: "/#properties", label: "Properties" }]
+  const navLinks = [
+    { href: "/#properties",   label: "Properties"  },
+    { href: "/#destinations", label: "Destinations" },
+    { href: "/#how-it-works", label: "How it works" },
+  ]
 
   // Skeleton shown while session is loading to prevent flash of wrong auth state
   const AuthSkeleton = () => (
@@ -117,16 +119,21 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "relative px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                    "relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 group/navlink",
                     pathname === link.href
-                      ? "text-primary bg-primary/8"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-primary hover:bg-primary/8"
                   )}
                 >
                   {link.label}
-                  {pathname === link.href && (
-                    <span className="absolute inset-x-4 -bottom-px h-0.5 bg-primary rounded-full" />
-                  )}
+                  <span
+                    className={cn(
+                      "absolute inset-x-4 -bottom-px h-0.5 rounded-full transition-all duration-200",
+                      pathname === link.href
+                        ? "bg-primary"
+                        : "bg-primary scale-x-0 group-hover/navlink:scale-x-100"
+                    )}
+                  />
                 </Link>
               ))}
             </div>

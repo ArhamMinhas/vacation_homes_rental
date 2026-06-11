@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { createBooking, getUserBookings, getAllBookings } from "@/services/booking.service"
 import { checkPropertyAvailability } from "@/services/availability.service"
 import { bookingSchema } from "@/validations/booking.schema"
+import { logger } from "@/lib/logger"
 
 export async function GET(_request: NextRequest) {
   try {
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
     const booking = await createBooking(parsed.data, user.id)
     return NextResponse.json({ booking }, { status: 201 })
   } catch (e) {
-    console.error("[POST /api/bookings]", e)
+    logger.error("[POST /api/bookings]", { error: String(e) })
     const msg = e instanceof Error ? e.message : "Failed to create booking"
     return NextResponse.json({ error: msg }, { status: 500 })
   }

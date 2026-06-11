@@ -1,4 +1,5 @@
-export const APP_NAME = "StayFinder"
+// Pulled from env so the name can be changed without touching code
+export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "StayFinder"
 export const APP_DESCRIPTION = "Find and book your perfect vacation home"
 
 export const ROUTES = {
@@ -15,6 +16,7 @@ export const ROUTES = {
   ADMIN_PROPERTIES_CREATE: "/admin/properties/create",
   ADMIN_BOOKINGS: "/admin/bookings",
   ADMIN_BLOCKED_DATES: "/admin/blocked-dates",
+  ADMIN_USERS: "/admin/users",
 } as const
 
 export const BOOKING_STATUS = {
