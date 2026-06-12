@@ -7,15 +7,19 @@ import { logger } from "@/lib/logger"
 export async function GET(request: NextRequest) {
   try {
     const p = request.nextUrl.searchParams
-    const properties = await getFilteredProperties({
-      location: p.get("location") ?? undefined,
+    const result = await getFilteredProperties({
+      location:      p.get("location") ?? undefined,
       property_type: p.get("property_type") ?? undefined,
-      min_price: p.get("min_price") ? Number(p.get("min_price")) : undefined,
-      max_price: p.get("max_price") ? Number(p.get("max_price")) : undefined,
-      bedrooms: p.get("bedrooms") ? Number(p.get("bedrooms")) : undefined,
-      max_guests: p.get("guests") ? Number(p.get("guests")) : undefined,
+      min_price:     p.get("min_price")  ? Number(p.get("min_price"))  : undefined,
+      max_price:     p.get("max_price")  ? Number(p.get("max_price"))  : undefined,
+      bedrooms:      p.get("bedrooms")   ? Number(p.get("bedrooms"))   : undefined,
+      max_guests:    p.get("guests")     ? Number(p.get("guests"))     : undefined,
+      page:          p.get("page")       ? Number(p.get("page"))       : 1,
+      pageSize:      p.get("pageSize")   ? Number(p.get("pageSize"))   : 12,
     })
-    return NextResponse.json({ properties })
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120" },
+    })
   } catch {
     return NextResponse.json({ error: "Failed to fetch properties" }, { status: 500 })
   }

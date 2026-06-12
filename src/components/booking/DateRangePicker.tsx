@@ -2,7 +2,7 @@
 
 import { CalendarDays } from "lucide-react"
 import { Label } from "@/components/ui/label"
-import { toInputDate } from "@/utils/formatDate"
+import { toInputDate, formatDate } from "@/utils/formatDate"
 import { cn } from "@/lib/utils"
 import type { DateRange } from "@/services/availability.service"
 
@@ -14,6 +14,30 @@ interface DateRangePickerProps {
   unavailable?: DateRange[]
   errorCheckIn?: string
   errorCheckOut?: string
+  onConflict?: (message: string, type: "booking" | "blocked") => void
+}
+
+function findConflict(start: string, end: string, ranges: DateRange[]): DateRange | null {
+  return ranges.find((r) => r.start < end && r.end > start) ?? null
+}
+
+function buildConflictMessage(conflict: DateRange, context: "check-in" | "range"): string {
+  if (conflict.type === "blocked") {
+    // end is exclusive (normalised) — subtract 1 day to get the inclusive display end
+    const d = new Date(conflict.end)
+    d.setUTCDate(d.getUTCDate() - 1)
+    const inclusiveEnd = d.toISOString().split("T")[0]
+    const period =
+      conflict.start === inclusiveEnd
+        ? formatDate(conflict.start)
+        : `${formatDate(conflict.start)} – ${formatDate(inclusiveEnd)}`
+    return `The host has blocked ${period} for maintenance or personal use.`
+  }
+  // Guest booking conflict
+  const period = `${formatDate(conflict.start)} – ${formatDate(conflict.end)}`
+  return context === "check-in"
+    ? `Your check-in falls within an existing reservation (${period}).`
+    : `Your selected dates overlap with an existing reservation (${period}).`
 }
 
 export default function DateRangePicker({
@@ -21,8 +45,10 @@ export default function DateRangePicker({
   checkOut,
   onCheckInChange,
   onCheckOutChange,
+  unavailable = [],
   errorCheckIn,
   errorCheckOut,
+  onConflict,
 }: DateRangePickerProps) {
   const today = toInputDate(new Date())
   const minCheckOut = checkIn
@@ -32,6 +58,24 @@ export default function DateRangePicker({
   const handleCheckIn = (v: string) => {
     onCheckInChange(v)
     if (checkOut && v >= checkOut) onCheckOutChange("")
+
+    if (v && unavailable.length > 0) {
+      const rangeEnd =
+        checkOut && checkOut > v
+          ? checkOut
+          : toInputDate(new Date(new Date(v).getTime() + 86_400_000))
+      const conflict = findConflict(v, rangeEnd, unavailable)
+      if (conflict) onConflict?.(buildConflictMessage(conflict, "check-in"), conflict.type ?? "booking")
+    }
+  }
+
+  const handleCheckOut = (v: string) => {
+    onCheckOutChange(v)
+
+    if (v && checkIn && unavailable.length > 0) {
+      const conflict = findConflict(checkIn, v, unavailable)
+      if (conflict) onConflict?.(buildConflictMessage(conflict, "range"), conflict.type ?? "booking")
+    }
   }
 
   return (
@@ -79,7 +123,7 @@ export default function DateRangePicker({
             type="date"
             value={checkOut}
             min={minCheckOut}
-            onChange={(e) => onCheckOutChange(e.target.value)}
+            onChange={(e) => handleCheckOut(e.target.value)}
             className="flex-1 bg-transparent text-sm text-foreground outline-none [color-scheme:light] cursor-pointer min-w-0"
           />
         </div>

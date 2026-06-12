@@ -4,6 +4,7 @@ import { getAllBookings } from "@/services/booking.service"
 import { getAllPropertiesAdmin } from "@/services/property.service"
 import AdminHeader from "@/components/admin/AdminHeader"
 import DashboardStats from "@/components/admin/DashboardStats"
+import DashboardRealtimeSync from "@/components/admin/DashboardRealtimeSync"
 import Loader from "@/components/common/Loader"
 import { formatCurrency } from "@/utils/formatCurrency"
 import { formatDate } from "@/utils/formatDate"
@@ -38,6 +39,7 @@ export default async function AdminDashboardPage() {
       <AdminHeader
         title="Dashboard"
         description="Welcome back. Here's an overview of your platform."
+        action={<DashboardRealtimeSync />}
       />
 
       <Suspense fallback={<Loader size="sm" className="py-4" />}>

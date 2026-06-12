@@ -105,15 +105,15 @@ export default async function UserBookingsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1">
+                  <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 pt-1">
                     <div>
                       <span className="text-sm text-muted-foreground">{booking.nights} nights · </span>
                       <span className="font-semibold text-foreground">{formatCurrency(booking.total_price)}</span>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-shrink-0">
                       {booking.property && (
                         <Link href={ROUTES.PROPERTY_DETAIL(booking.property_id)}>
-                          <Button variant="outline" size="sm">View property</Button>
+                          <Button variant="outline" size="sm" className="text-xs h-8">View property</Button>
                         </Link>
                       )}
                       {booking.status === "pending" && (

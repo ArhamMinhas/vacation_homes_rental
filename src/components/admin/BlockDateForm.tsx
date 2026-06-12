@@ -35,10 +35,13 @@ export default function BlockDateForm({
     handleSubmit,
     setValue,
     reset,
+    watch,
     formState: { errors },
   } = useForm<BlockedDateInput>({
     resolver: zodResolver(blockedDateSchema),
   })
+
+  const startDateValue = watch("start_date")
 
   const onSubmit = async (data: BlockedDateInput) => {
     setIsLoading(true)
@@ -106,7 +109,7 @@ export default function BlockDateForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="start_date">Start date</Label>
+            <Label htmlFor="start_date">First blocked date</Label>
             <Input
               id="start_date"
               type="date"
@@ -120,11 +123,13 @@ export default function BlockDateForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="end_date">End date</Label>
+            <Label htmlFor="end_date">
+              Last blocked date <span className="text-muted-foreground font-normal">(inclusive)</span>
+            </Label>
             <Input
               id="end_date"
               type="date"
-              min={today}
+              min={startDateValue || today}
               {...register("end_date")}
               className={errors.end_date ? "border-destructive" : ""}
             />

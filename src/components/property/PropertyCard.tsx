@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { MapPin, BedDouble, Bath, Users, Heart } from "lucide-react"
 import type { Property } from "@/types/property"
 import { ROUTES } from "@/lib/constants"
@@ -9,6 +10,8 @@ import { cn } from "@/lib/utils"
 interface PropertyCardProps {
   property: Property
   className?: string
+  /** Set true for above-the-fold cards to preload as LCP candidate */
+  priority?: boolean
 }
 
 function formatPrice(price: number) {
@@ -30,7 +33,7 @@ const TYPE_BADGE: Record<string, string> = {
   Studio: "bg-indigo-600/90",
 }
 
-export default function PropertyCard({ property, className }: PropertyCardProps) {
+export default function PropertyCard({ property, className, priority = false }: PropertyCardProps) {
   const primaryImage = property.images?.[0]
   const typeBadge = TYPE_BADGE[property.property_type] ?? "bg-gray-700/90"
 
@@ -46,11 +49,13 @@ export default function PropertyCard({ property, className }: PropertyCardProps)
       {/* Image */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         {primaryImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={primaryImage}
             alt={property.title}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
+            priority={priority}
+            className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">

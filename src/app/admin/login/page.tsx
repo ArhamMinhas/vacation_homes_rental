@@ -97,20 +97,20 @@ export default function AdminLoginPage() {
               <span className="text-xl font-bold text-white">{APP_NAME}</span>
             </div>
 
-            <div
-              className="rounded-3xl overflow-hidden shadow-2xl border border-white/10"
-              style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(24px)" }}
-            >
-              {/* Card header */}
+            <div className="rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+              {/* ── Dark header ── */}
               <div
-                className="px-8 py-7 text-center space-y-4 border-b border-white/10"
-                style={{ background: "linear-gradient(135deg,rgba(13,148,136,0.15),rgba(99,102,241,0.10))" }}
+                className="px-8 py-7 text-center space-y-4"
+                style={{
+                  background: "linear-gradient(135deg,#0F2027 0%,#1a1f3a 50%,#0F2027 100%)",
+                  borderBottom: "1px solid rgba(255,255,255,0.08)",
+                }}
               >
                 <div className="flex justify-center">
                   <div className="relative">
-                    <div className="absolute inset-0 rounded-2xl bg-primary/30 blur-md" />
-                    <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 border border-primary/40 flex items-center justify-center shadow-lg">
-                      <ShieldCheck className="h-8 w-8 text-primary" />
+                    <div className="absolute inset-0 rounded-2xl bg-teal-500/20 blur-lg" />
+                    <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-teal-500/30 to-cyan-500/10 border border-teal-400/30 flex items-center justify-center shadow-lg">
+                      <ShieldCheck className="h-8 w-8 text-teal-300" />
                     </div>
                   </div>
                 </div>
@@ -118,16 +118,14 @@ export default function AdminLoginPage() {
                   <h2 className="text-xl font-bold text-white">Admin Portal</h2>
                   <p className="text-slate-400 text-sm mt-1">Restricted access — authorised personnel only</p>
                 </div>
-
-                {/* Security badge */}
-                <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">
+                <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/25 rounded-full px-3 py-1">
                   <Lock className="h-3 w-3 text-emerald-400" />
-                  <span className="text-emerald-400 text-xs font-medium">Encrypted & secured</span>
+                  <span className="text-emerald-400 text-xs font-medium">Encrypted &amp; secured</span>
                 </div>
               </div>
 
-              {/* Form */}
-              <div className="px-8 py-8">
+              {/* ── White form body — uses light-theme CSS vars correctly ── */}
+              <div className="bg-white px-8 py-8">
                 <Suspense>
                   <LoginForm isAdmin />
                 </Suspense>

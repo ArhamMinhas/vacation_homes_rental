@@ -19,7 +19,9 @@ export async function GET(
   const { id } = await params
   const property = await getPropertyById(id)
   if (!property) return NextResponse.json({ error: "Not found" }, { status: 404 })
-  return NextResponse.json({ property })
+  return NextResponse.json({ property }, {
+    headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600" },
+  })
 }
 
 export async function PATCH(

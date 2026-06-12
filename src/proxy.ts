@@ -74,6 +74,24 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    /*
+     * Only run the proxy (and its getUser() network call) on routes that
+     * actually need an auth decision. Public pages — homepage, /properties,
+     * /properties/[id] — are excluded so they have zero proxy overhead.
+     *
+     * Session token refresh for public pages is handled by createClient()
+     * inside each server component, which also manages cookies correctly.
+     */
+
+    // Admin dashboard — requires auth + admin role
+    "/admin/:path*",
+
+    // Signed-in user pages — requires auth
+    "/dashboard/:path*",
+    "/bookings/:path*",
+
+    // Auth pages — redirect already-signed-in users away
+    "/auth/login",
+    "/auth/register",
   ],
 }

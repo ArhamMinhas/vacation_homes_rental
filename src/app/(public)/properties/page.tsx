@@ -4,7 +4,10 @@ import { getFilteredProperties, type PropertyFilters } from "@/services/property
 import PropertyCard from "@/components/property/PropertyCard"
 import PropertyCardSkeleton from "@/components/property/PropertyCardSkeleton"
 import EmptyState from "@/components/common/EmptyState"
+import Pagination from "@/components/common/Pagination"
 import { PROPERTY_TYPES } from "@/lib/constants"
+
+const PAGE_SIZE = 12
 
 interface SearchParams {
   location?: string
@@ -13,10 +16,21 @@ interface SearchParams {
   max_price?: string
   bedrooms?: string
   guests?: string
+  page?: string
 }
 
-async function PropertiesGrid({ filters }: { filters: PropertyFilters }) {
-  const properties = await getFilteredProperties(filters)
+// ── Streaming section — grid + pagination load together ───────────────────────
+async function PropertiesSection({
+  filters,
+  page,
+  searchParams,
+}: {
+  filters: PropertyFilters
+  page: number
+  searchParams: SearchParams
+}) {
+  const result = await getFilteredProperties({ ...filters, page, pageSize: PAGE_SIZE })
+  const { properties, total, totalPages } = result
 
   if (properties.length === 0) {
     return (
@@ -28,45 +42,73 @@ async function PropertiesGrid({ filters }: { filters: PropertyFilters }) {
     )
   }
 
+  const buildHref = (p: number) => {
+    const params = new URLSearchParams()
+    if (searchParams.location)      params.set("location",      searchParams.location)
+    if (searchParams.property_type) params.set("property_type", searchParams.property_type)
+    if (searchParams.min_price)     params.set("min_price",     searchParams.min_price)
+    if (searchParams.max_price)     params.set("max_price",     searchParams.max_price)
+    if (searchParams.bedrooms)      params.set("bedrooms",      searchParams.bedrooms)
+    if (searchParams.guests)        params.set("guests",        searchParams.guests)
+    if (p > 1)                      params.set("page",          String(p))
+    const qs = params.toString()
+    return `/properties${qs ? `?${qs}` : ""}`
+  }
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-      {properties.map((property, i) => (
-        <div
-          key={property.id}
-          className="animate-fade-in-up"
-          style={{ animationDelay: `${Math.min(i * 60, 360)}ms` }}
-        >
-          <PropertyCard property={property} />
-        </div>
-      ))}
-    </div>
+    <>
+      <p className="text-sm text-muted-foreground mb-5">
+        {total} {total === 1 ? "property" : "properties"} found
+      </p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+        {properties.map((property, i) => (
+          <div
+            key={property.id}
+            className="animate-fade-in-up"
+            style={{ animationDelay: `${Math.min(i * 60, 360)}ms` }}
+          >
+            <PropertyCard property={property} priority={i < 3} />
+          </div>
+        ))}
+      </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        buildHref={buildHref}
+      />
+    </>
   )
 }
 
 function PropertiesSkeletonGrid() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-      {Array.from({ length: 6 }).map((_, i) => (
+      {Array.from({ length: PAGE_SIZE }).map((_, i) => (
         <PropertyCardSkeleton key={i} />
       ))}
     </div>
   )
 }
 
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default async function PropertiesPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>
 }) {
   const sp = await searchParams
+  const page = sp.page ? Math.max(1, parseInt(sp.page, 10)) : 1
 
   const filters: PropertyFilters = {
-    location: sp.location,
+    location:      sp.location,
     property_type: sp.property_type,
-    min_price: sp.min_price ? Number(sp.min_price) : undefined,
-    max_price: sp.max_price ? Number(sp.max_price) : undefined,
-    bedrooms: sp.bedrooms ? Number(sp.bedrooms) : undefined,
-    max_guests: sp.guests ? Number(sp.guests) : undefined,
+    min_price:     sp.min_price ? Number(sp.min_price) : undefined,
+    max_price:     sp.max_price ? Number(sp.max_price) : undefined,
+    bedrooms:      sp.bedrooms  ? Number(sp.bedrooms)  : undefined,
+    max_guests:    sp.guests    ? Number(sp.guests)    : undefined,
   }
 
   const hasFilters = Object.values(filters).some((v) => v !== undefined)
@@ -83,11 +125,11 @@ export default async function PropertiesPage({
         )}
       </div>
 
-      {/* Filter bar */}
+      {/* Filter bar — always visible, no Suspense */}
       <form method="get" className="mb-10 animate-fade-in-up delay-100">
-        <div className="bg-card rounded-2xl border border-border shadow-card p-4">
-          <div className="flex flex-wrap gap-3 items-end">
-            <div className="flex-1 min-w-[160px] space-y-1">
+        <div className="bg-card rounded-2xl border border-border shadow-card p-4 sm:p-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="col-span-2 sm:col-span-3 lg:col-span-1 space-y-1">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Location
               </label>
@@ -99,7 +141,7 @@ export default async function PropertiesPage({
               />
             </div>
 
-            <div className="min-w-[140px] space-y-1">
+            <div className="space-y-1">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Type
               </label>
@@ -115,7 +157,7 @@ export default async function PropertiesPage({
               </select>
             </div>
 
-            <div className="min-w-[100px] space-y-1">
+            <div className="space-y-1">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Bedrooms
               </label>
@@ -131,7 +173,7 @@ export default async function PropertiesPage({
               </select>
             </div>
 
-            <div className="min-w-[100px] space-y-1">
+            <div className="space-y-1">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Guests
               </label>
@@ -147,10 +189,10 @@ export default async function PropertiesPage({
               </select>
             </div>
 
-            <div className="flex gap-2">
+            <div className="col-span-2 sm:col-span-3 lg:col-span-1 flex gap-2 items-end">
               <button
                 type="submit"
-                className="h-10 px-5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-sm"
+                className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm"
               >
                 <SlidersHorizontal className="h-3.5 w-3.5" />
                 Filter
@@ -158,10 +200,10 @@ export default async function PropertiesPage({
               {hasFilters && (
                 <a
                   href="/properties"
-                  className="h-10 px-4 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
+                  className="h-10 px-4 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1.5 flex-shrink-0"
                 >
                   <X className="h-3.5 w-3.5" />
-                  Clear
+                  <span className="hidden xs:inline">Clear</span>
                 </a>
               )}
             </div>
@@ -169,9 +211,9 @@ export default async function PropertiesPage({
         </div>
       </form>
 
-      {/* Grid */}
-      <Suspense fallback={<PropertiesSkeletonGrid />}>
-        <PropertiesGrid filters={filters} />
+      {/* Grid + Pagination — stream in together */}
+      <Suspense key={`${JSON.stringify(filters)}-${page}`} fallback={<PropertiesSkeletonGrid />}>
+        <PropertiesSection filters={filters} page={page} searchParams={sp} />
       </Suspense>
     </div>
   )

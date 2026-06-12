@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation"
-import { Suspense } from "react"
-import { getPropertyById } from "@/services/property.service"
+import { Suspense, cache } from "react"
+import { getPropertyById as _getPropertyById } from "@/services/property.service"
+
+// Per-request memoization — generateMetadata, BookingPanel, and the page
+// all call this; cache() deduplicates them into one DB query per request.
+const getPropertyById = cache(_getPropertyById)
 import { getUnavailableDates } from "@/services/availability.service"
 import { getCurrentUser } from "@/lib/auth"
 import PropertyGallery from "@/components/property/PropertyGallery"

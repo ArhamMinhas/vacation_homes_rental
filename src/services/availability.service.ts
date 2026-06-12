@@ -4,28 +4,51 @@ import { formatDate } from "@/utils/formatDate"
 export interface DateRange {
   start: string
   end: string
+  type?: "booking" | "blocked"
 }
 
 export interface AvailabilityResult {
   available: boolean
   reason?: string
+  conflictType?: "booking" | "blocked"
 }
 
-// ─── Overlap helper ───────────────────────────────────────────────────────────
+// ─── Overlap helpers ──────────────────────────────────────────────────────────
+
+/** Add one day to a YYYY-MM-DD string (UTC-safe). */
+function addOneDay(dateStr: string): string {
+  const d = new Date(dateStr)
+  d.setUTCDate(d.getUTCDate() + 1)
+  return d.toISOString().split("T")[0]
+}
 
 /**
- * Returns true if two [start, end) date ranges overlap.
- * Checkout date is NOT occupied — [check_in, check_out) logic.
- *
- * Overlap condition: existing_start < requested_end AND existing_end > requested_start
+ * Returns true if two [start, end) half-open ranges overlap.
+ * Both checkout and booking.end are exclusive (the day the guest leaves).
  */
 function rangesOverlap(
   existingStart: string,
-  existingEnd: string,
+  existingEnd: string,   // exclusive
   requestedStart: string,
-  requestedEnd: string
+  requestedEnd: string   // exclusive
 ): boolean {
   return existingStart < requestedEnd && existingEnd > requestedStart
+}
+
+/**
+ * Returns true if a blocked period [blockedStart, blockedEnd] (INCLUSIVE end)
+ * overlaps with a booking [checkIn, checkOut) (EXCLUSIVE checkout).
+ *
+ * We normalise the inclusive end to exclusive by adding one day so we can
+ * reuse the same rangesOverlap logic as confirmed bookings.
+ */
+function blockedOverlaps(
+  blockedStart: string,
+  blockedEnd: string,  // INCLUSIVE — admin enters last blocked day
+  checkIn: string,
+  checkOut: string     // exclusive
+): boolean {
+  return rangesOverlap(blockedStart, addOneDay(blockedEnd), checkIn, checkOut)
 }
 
 // ─── Availability check ───────────────────────────────────────────────────────
@@ -85,7 +108,8 @@ export async function checkPropertyAvailability(
   if (hasBlockedOverlap) {
     return {
       available: false,
-      reason: "The host has blocked one or more of your selected dates. Please choose different dates.",
+      conflictType: "blocked",
+      reason: "The host has blocked one or more of your selected dates for maintenance or personal use.",
     }
   }
 
@@ -94,7 +118,8 @@ export async function checkPropertyAvailability(
   if (conflicting) {
     return {
       available: false,
-      reason: `These dates overlap with a confirmed reservation (${formatDate(conflicting.check_in)} – ${formatDate(conflicting.check_out)}). Please select dates that don't overlap with that period.`,
+      conflictType: "booking",
+      reason: `These dates overlap with a confirmed guest reservation (${formatDate(conflicting.check_in)} – ${formatDate(conflicting.check_out)}).`,
     }
   }
 
@@ -157,9 +182,8 @@ export async function checkBlockedDateOverlap(
 
   if (!blocked) return false
 
-  return blocked.some((b) =>
-    rangesOverlap(b.start_date, b.end_date, checkIn, checkOut)
-  )
+  // end_date is INCLUSIVE (admin's last blocked day) — use blockedOverlaps
+  return blocked.some((b) => blockedOverlaps(b.start_date, b.end_date, checkIn, checkOut))
 }
 
 // ─── Unavailable date ranges for date picker ──────────────────────────────────
@@ -183,9 +207,10 @@ export async function getUnavailableDates(
 
   const ranges: DateRange[] = []
   for (const b of bookings ?? [])
-    ranges.push({ start: b.check_in, end: b.check_out })
+    ranges.push({ start: b.check_in, end: b.check_out, type: "booking" })
   for (const bd of blocked ?? [])
-    ranges.push({ start: bd.start_date, end: bd.end_date })
+    // Normalize inclusive end_date → exclusive so client findConflict works uniformly
+    ranges.push({ start: bd.start_date, end: addOneDay(bd.end_date), type: "blocked" })
 
   return ranges
 }

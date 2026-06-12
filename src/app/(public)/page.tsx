@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import Link from "next/link"
 import {
   ShieldCheck, CreditCard, HeadphonesIcon, ArrowRight,
@@ -10,17 +11,58 @@ import { Button } from "@/components/ui/button"
 import { APP_NAME, ROUTES } from "@/lib/constants"
 import type { Property } from "@/types/property"
 
-async function getFeaturedProperties(): Promise<Property[]> {
+async function FeaturedCarouselSection() {
+  let featured: Property[] = []
   try {
-    const all = await getFilteredProperties()
-    return all.slice(0, 9)
+    const { properties } = await getFilteredProperties({ pageSize: 9, page: 1 })
+    featured = properties
   } catch {
-    return []
+    featured = []
   }
+
+  if (featured.length === 0) {
+    return (
+      <div className="text-center py-16 sm:py-24 border-2 border-dashed border-border rounded-2xl bg-muted/10 px-4">
+        <div className="text-5xl mb-4">🏡</div>
+        <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Properties coming soon</h3>
+        <p className="text-muted-foreground text-sm max-w-xs mx-auto mb-6">
+          Our collection is being curated. Check back shortly.
+        </p>
+        <Link href={ROUTES.PROPERTIES}>
+          <Button variant="outline" className="gap-2 rounded-xl">
+            Browse listings <ArrowRight className="h-4 w-4" />
+          </Button>
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative px-4 sm:px-8 lg:px-10">
+      <PropertyCarousel properties={featured} />
+    </div>
+  )
 }
 
-export default async function HomePage() {
-  const featured = await getFeaturedProperties()
+function CarouselSkeleton() {
+  return (
+    <div className="relative px-4 sm:px-8 lg:px-10">
+      <div className="flex gap-6 overflow-hidden">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex-1 min-w-0">
+            <div className="aspect-[4/3] rounded-2xl bg-muted animate-pulse" />
+            <div className="mt-3 space-y-2 px-1">
+              <div className="h-4 w-3/4 rounded bg-muted animate-pulse" />
+              <div className="h-3 w-1/2 rounded bg-muted animate-pulse" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export default function HomePage() {
 
   return (
     <div className="min-h-screen overflow-x-hidden">
@@ -110,7 +152,7 @@ export default async function HomePage() {
 
           {/* Headline */}
           <div className="animate-fade-in-up delay-100 space-y-4 px-2">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.08] tracking-tight">
+            <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.08] tracking-tight">
               Find your perfect
               <br />
               <span
@@ -215,24 +257,9 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          {featured.length > 0 ? (
-            <div className="relative px-6 sm:px-8">
-              <PropertyCarousel properties={featured} />
-            </div>
-          ) : (
-            <div className="text-center py-16 sm:py-24 border-2 border-dashed border-border rounded-2xl bg-muted/10 px-4">
-              <div className="text-5xl mb-4">🏡</div>
-              <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Properties coming soon</h3>
-              <p className="text-muted-foreground text-sm max-w-xs mx-auto mb-6">
-                Our collection is being curated. Check back shortly.
-              </p>
-              <Link href={ROUTES.PROPERTIES}>
-                <Button variant="outline" className="gap-2 rounded-xl">
-                  Browse listings <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          )}
+          <Suspense fallback={<CarouselSkeleton />}>
+            <FeaturedCarouselSection />
+          </Suspense>
         </div>
       </section>
 

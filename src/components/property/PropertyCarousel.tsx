@@ -10,6 +10,7 @@ const GAP = 24
 
 function useCarouselLayout(containerRef: React.RefObject<HTMLDivElement | null>) {
   const [layout, setLayout] = useState({ ipv: 3, cardWidth: 0 })
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(null)
 
   const update = useCallback(() => {
     const w = window.innerWidth
@@ -20,13 +21,21 @@ function useCarouselLayout(containerRef: React.RefObject<HTMLDivElement | null>)
     setLayout({ ipv, cardWidth: Math.max(0, cw) })
   }, [containerRef])
 
+  const debouncedUpdate = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(update, 100)
+  }, [update])
+
   useEffect(() => {
     update()
-    const ro = new ResizeObserver(update)
+    const ro = new ResizeObserver(debouncedUpdate)
     const el = containerRef.current
     if (el) ro.observe(el)
-    return () => ro.disconnect()
-  }, [update, containerRef])
+    return () => {
+      ro.disconnect()
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [update, debouncedUpdate, containerRef])
 
   return layout
 }
@@ -72,7 +81,7 @@ export default function PropertyCarousel({ properties }: { properties: Property[
             willChange: "transform",
           }}
         >
-          {properties.map((property) => (
+          {properties.map((property, i) => (
             <div
               key={property.id}
               style={{
@@ -83,7 +92,8 @@ export default function PropertyCarousel({ properties }: { properties: Property[
                     : `calc(${100 / itemsPerView}% - ${(GAP * (itemsPerView - 1)) / itemsPerView}px)`,
               }}
             >
-              <PropertyCard property={property} />
+              {/* Preload only the first viewport-worth of cards as LCP candidates */}
+              <PropertyCard property={property} priority={i < itemsPerView} />
             </div>
           ))}
         </div>

@@ -4,7 +4,8 @@ import { useState, useEffect } from "react"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
-import { Loader2, CalendarX, CheckCircle2 } from "lucide-react"
+import Image from "next/image"
+import { Loader2, CalendarX, CheckCircle2, Lock } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { bookingSchema, type BookingInput } from "@/validations/booking.schema"
 import { calculateNights } from "@/utils/calculateNights"
@@ -22,6 +23,7 @@ import GuestSelector from "./GuestSelector"
 import BookingSummary from "./BookingSummary"
 import { ROUTES } from "@/lib/constants"
 import { formatCurrency } from "@/utils/formatCurrency"
+import { cn } from "@/lib/utils"
 
 interface BookingFormProps {
   property: Property
@@ -33,6 +35,7 @@ export default function BookingForm({ property, unavailable }: BookingFormProps)
   const [isLoading,       setIsLoading]       = useState(false)
   const [serverError,     setServerError]     = useState<string | null>(null)
   const [conflictMessage, setConflictMessage] = useState<string | null>(null)
+  const [conflictType,    setConflictType]    = useState<"booking" | "blocked">("booking")
   const [success,         setSuccess]         = useState(false)
   const [checkIn,         setCheckIn]         = useState("")
   const [checkOut,        setCheckOut]        = useState("")
@@ -60,6 +63,13 @@ export default function BookingForm({ property, unavailable }: BookingFormProps)
     })
   }, [setValue])
 
+  const showConflict = (msg: string, type: "booking" | "blocked") => {
+    setConflictType(type)
+    setConflictMessage(msg)
+  }
+
+  const clearConflict = () => setConflictMessage(null)
+
   const onSubmit = async (data: BookingInput) => {
     if (!checkIn || !checkOut) {
       setServerError("Please select check-in and check-out dates")
@@ -78,7 +88,10 @@ export default function BookingForm({ property, unavailable }: BookingFormProps)
       })
       const avail = await availRes.json()
       if (!avail.available) {
-        setConflictMessage(avail.reason ?? "Selected dates are not available")
+        showConflict(
+          avail.reason ?? "Selected dates are not available",
+          avail.conflictType ?? "booking"
+        )
         setIsLoading(false)
         return
       }
@@ -92,7 +105,10 @@ export default function BookingForm({ property, unavailable }: BookingFormProps)
       const json = await res.json()
 
       if (res.status === 409) {
-        setConflictMessage(json.error ?? "Selected dates are no longer available")
+        showConflict(
+          json.error ?? "Selected dates are no longer available",
+          json.conflictType ?? "booking"
+        )
         return
       }
       if (!res.ok) {
@@ -131,8 +147,28 @@ export default function BookingForm({ property, unavailable }: BookingFormProps)
     )
   }
 
+  const isBlocked = conflictType === "blocked"
+
   return (
     <>
+      {/* ── Property image ──────────────────────────────────────────────────── */}
+      {property.images[0] && (
+        <div className="relative h-40 w-full overflow-hidden rounded-xl bg-muted mb-5">
+          <Image
+            src={property.images[0]}
+            alt={property.title}
+            fill
+            sizes="360px"
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 pt-8 pb-2.5">
+            <p className="text-white text-sm font-semibold truncate leading-tight">{property.title}</p>
+            <p className="text-white/70 text-xs truncate">{property.location}</p>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Price header */}
         <div className="flex items-baseline gap-1">
@@ -156,6 +192,7 @@ export default function BookingForm({ property, unavailable }: BookingFormProps)
           unavailable={unavailable}
           errorCheckIn={errors.check_in?.message}
           errorCheckOut={errors.check_out?.message}
+          onConflict={showConflict}
         />
 
         <GuestSelector
@@ -251,32 +288,65 @@ export default function BookingForm({ property, unavailable }: BookingFormProps)
         </p>
       </form>
 
-      {/* ── Dates-unavailable dialog ──────────────────────────────────────────── */}
-      <Dialog open={!!conflictMessage} onOpenChange={(o) => !o && setConflictMessage(null)}>
+      {/* ── Conflict dialog — appearance differs for guest reservations vs admin blocks ── */}
+      <Dialog open={!!conflictMessage} onOpenChange={(o) => !o && clearConflict()}>
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-amber-600">
-              <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center">
-                <CalendarX className="h-4 w-4 flex-shrink-0" />
+            <DialogTitle className={cn(
+              "flex items-center gap-2",
+              isBlocked ? "text-orange-600" : "text-amber-600"
+            )}>
+              <div className={cn(
+                "h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0",
+                isBlocked ? "bg-orange-50" : "bg-amber-50"
+              )}>
+                {isBlocked
+                  ? <Lock className="h-4 w-4" />
+                  : <CalendarX className="h-4 w-4" />
+                }
               </div>
-              Dates not available
+              {isBlocked ? "Dates Blocked by Host" : "Already Reserved"}
             </DialogTitle>
             <DialogDescription className="sr-only">
-              These dates are already reserved for this property.
+              {isBlocked
+                ? "These dates have been blocked by the host for maintenance or personal use."
+                : "These dates are already booked by another guest."
+              }
             </DialogDescription>
           </DialogHeader>
-          <div className="rounded-xl bg-amber-50 border border-amber-200 p-4">
-            <p className="text-sm font-semibold text-amber-800 mb-1">These dates are already reserved</p>
-            <p className="text-sm text-amber-700 leading-relaxed">{conflictMessage}</p>
+
+          <div className={cn(
+            "rounded-xl p-4 border",
+            isBlocked
+              ? "bg-orange-50 border-orange-200"
+              : "bg-amber-50 border-amber-200"
+          )}>
+            <p className={cn(
+              "text-sm font-semibold mb-1",
+              isBlocked ? "text-orange-800" : "text-amber-800"
+            )}>
+              {isBlocked ? "Host-blocked period" : "Guest reservation conflict"}
+            </p>
+            <p className={cn(
+              "text-sm leading-relaxed",
+              isBlocked ? "text-orange-700" : "text-amber-700"
+            )}>
+              {conflictMessage}
+            </p>
           </div>
+
           <p className="text-sm text-muted-foreground">
-            Please select different dates for your stay.
+            {isBlocked
+              ? "These dates are reserved for owner use or maintenance. Please choose different dates."
+              : "Please select dates that don't overlap with the existing reservation."
+            }
           </p>
+
           <DialogFooter className="flex-col gap-2 sm:flex-row">
-            <Button className="w-full rounded-xl" onClick={() => setConflictMessage(null)}>
+            <Button className="w-full rounded-xl" onClick={clearConflict}>
               Choose different dates
             </Button>
-            <Button variant="outline" className="w-full rounded-xl" onClick={() => setConflictMessage(null)}>
+            <Button variant="outline" className="w-full rounded-xl" onClick={clearConflict}>
               Dismiss
             </Button>
           </DialogFooter>

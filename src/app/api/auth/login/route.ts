@@ -1,8 +1,25 @@
 import { NextResponse } from "next/server"
 import { loginSchema } from "@/validations/auth.schema"
 import { loginUser, getProfileById } from "@/services/auth.service"
+import { rateLimit, getClientIp } from "@/lib/rate-limit"
 
 export async function POST(request: Request) {
+  // 10 attempts per 60 s per IP — prevents credential brute-force
+  const ip = getClientIp(request)
+  const rl = rateLimit(`login:${ip}`, 10, 60_000)
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Too many login attempts. Please wait a minute and try again." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)),
+          "X-RateLimit-Remaining": "0",
+        },
+      }
+    )
+  }
+
   try {
     const body = await request.json()
     const parsed = loginSchema.safeParse(body)

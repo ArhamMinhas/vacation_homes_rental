@@ -27,6 +27,10 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: Do not add any code between createServerClient and getUser().
   // A subtle bug can occur if the session is not refreshed correctly.
+  //
+  // getUser() contacts the Supabase Auth server to validate the token — it
+  // cannot be spoofed by a crafted cookie. This is the only correct approach
+  // for server-side auth decisions per Supabase SSR guidance.
   let user = null
   try {
     const { data } = await supabase.auth.getUser()

@@ -75,18 +75,18 @@ export default function PropertyDetails({ property }: PropertyDetailsProps) {
       </div>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-3 gap-4 py-6 border-y border-border">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 py-5 sm:py-6 border-y border-border">
         {[
           { icon: BedDouble, value: property.bedrooms, label: property.bedrooms === 1 ? "Bedroom" : "Bedrooms" },
           { icon: Bath, value: property.bathrooms, label: property.bathrooms === 1 ? "Bathroom" : "Bathrooms" },
           { icon: Users, value: property.max_guests, label: "Max guests" },
         ].map(({ icon: Icon, value, label }) => (
           <div key={label} className="text-center group">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 group-hover:bg-primary/15 transition-colors">
-              <Icon className="h-5 w-5 text-primary" />
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 group-hover:bg-primary/15 transition-colors">
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-            <p className="text-lg font-bold text-foreground">{value}</p>
-            <p className="text-xs text-muted-foreground">{label}</p>
+            <p className="text-base sm:text-lg font-bold text-foreground">{value}</p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground">{label}</p>
           </div>
         ))}
       </div>

@@ -75,10 +75,15 @@ export default function Navbar() {
 
   const isAdmin = role === "admin"
   const navLinks = [
-    { href: "/#properties",   label: "Properties"  },
+    { href: "/properties",    label: "Properties"  },
     { href: "/#destinations", label: "Destinations" },
     { href: "/#how-it-works", label: "How it works" },
   ]
+
+  const isLinkActive = (href: string) => {
+    if (href.includes("#")) return false
+    return pathname === href || pathname.startsWith(href + "/")
+  }
 
   // Skeleton shown while session is loading to prevent flash of wrong auth state
   const AuthSkeleton = () => (
@@ -120,7 +125,7 @@ export default function Navbar() {
                   href={link.href}
                   className={cn(
                     "relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 group/navlink",
-                    pathname === link.href
+                    isLinkActive(link.href)
                       ? "text-primary bg-primary/10"
                       : "text-muted-foreground hover:text-primary hover:bg-primary/8"
                   )}
@@ -129,7 +134,7 @@ export default function Navbar() {
                   <span
                     className={cn(
                       "absolute inset-x-4 -bottom-px h-0.5 rounded-full transition-all duration-200",
-                      pathname === link.href
+                      isLinkActive(link.href)
                         ? "bg-primary"
                         : "bg-primary scale-x-0 group-hover/navlink:scale-x-100"
                     )}
@@ -259,7 +264,7 @@ export default function Navbar() {
                 href={link.href}
                 className={cn(
                   "flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                  pathname === link.href
+                  isLinkActive(link.href)
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}

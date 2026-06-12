@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -30,11 +31,13 @@ export default function PropertyGallery({ images, title }: PropertyGalleryProps)
         {/* Main image */}
         <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-muted group cursor-pointer"
           onClick={() => setLightbox(true)}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={images[active]}
             alt={`${title} — photo ${active + 1}`}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            fill
+            priority={active === 0}
+            sizes="(max-width: 1024px) 100vw, 75vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
           <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -84,8 +87,13 @@ export default function PropertyGallery({ images, title }: PropertyGalleryProps)
                   i === active ? "border-primary ring-1 ring-primary" : "border-transparent opacity-60 hover:opacity-100"
                 )}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt={`Thumbnail ${i + 1}`} className="h-full w-full object-cover" />
+                <Image
+                  src={src}
+                  alt={`Thumbnail ${i + 1}`}
+                  width={96}
+                  height={64}
+                  className="h-full w-full object-cover"
+                />
               </button>
             ))}
           </div>

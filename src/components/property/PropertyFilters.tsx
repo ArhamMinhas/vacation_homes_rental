@@ -27,7 +27,6 @@ export default function PropertyFilters({ variant = "hero" }: HomeSearchProps) {
     if (checkIn) params.set("checkin", checkIn)
     if (checkOut) params.set("checkout", checkOut)
     if (guests > 1) params.set("guests", String(guests))
-
     router.push(`${ROUTES.PROPERTIES}?${params.toString()}`)
   }, [location, checkIn, checkOut, guests, router])
 
@@ -56,12 +55,16 @@ export default function PropertyFilters({ variant = "hero" }: HomeSearchProps) {
     )
   }
 
+  // ── Hero variant ───────────────────────────────────────
   return (
-    <div className="bg-background rounded-2xl shadow-2xl p-2 w-full max-w-4xl mx-auto">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-auto overflow-hidden">
+
+      {/* Fields row */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-border/30">
+
         {/* Location */}
-        <div className="flex flex-col px-4 py-3 rounded-xl hover:bg-muted/50 transition-colors cursor-text group">
-          <label className="text-xs font-semibold text-foreground mb-1">Location</label>
+        <div className="col-span-2 sm:col-span-2 lg:col-span-1 flex flex-col px-4 py-3.5 hover:bg-gray-50/80 transition-colors group lg:border-r border-border/30">
+          <label className="text-[11px] font-bold text-foreground mb-1 uppercase tracking-wide">Location</label>
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <input
@@ -70,14 +73,14 @@ export default function PropertyFilters({ variant = "hero" }: HomeSearchProps) {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground/70 outline-none"
             />
           </div>
         </div>
 
         {/* Check-in */}
-        <div className="flex flex-col px-4 py-3 rounded-xl hover:bg-muted/50 transition-colors">
-          <label className="text-xs font-semibold text-foreground mb-1">Check-in</label>
+        <div className="flex flex-col px-4 py-3.5 hover:bg-gray-50/80 transition-colors">
+          <label className="text-[11px] font-bold text-foreground mb-1 uppercase tracking-wide">Check-in</label>
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <input
@@ -94,8 +97,8 @@ export default function PropertyFilters({ variant = "hero" }: HomeSearchProps) {
         </div>
 
         {/* Check-out */}
-        <div className="flex flex-col px-4 py-3 rounded-xl hover:bg-muted/50 transition-colors">
-          <label className="text-xs font-semibold text-foreground mb-1">Check-out</label>
+        <div className="flex flex-col px-4 py-3.5 hover:bg-gray-50/80 transition-colors">
+          <label className="text-[11px] font-bold text-foreground mb-1 uppercase tracking-wide">Check-out</label>
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <input
@@ -108,31 +111,45 @@ export default function PropertyFilters({ variant = "hero" }: HomeSearchProps) {
           </div>
         </div>
 
-        {/* Guests + Search */}
-        <div className="flex items-center gap-2 px-2 py-2">
-          <div className="flex flex-col flex-1 px-2 py-1 rounded-xl hover:bg-muted/50 transition-colors">
-            <label className="text-xs font-semibold text-foreground mb-1">Guests</label>
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <input
-                type="number"
-                min={1}
-                max={20}
-                value={guests}
-                onChange={(e) => setGuests(Math.max(1, Number(e.target.value)))}
-                className="w-full bg-transparent text-sm text-foreground outline-none"
-              />
-            </div>
+        {/* Guests */}
+        <div className="flex flex-col px-4 py-3.5 hover:bg-gray-50/80 transition-colors">
+          <label className="text-[11px] font-bold text-foreground mb-1 uppercase tracking-wide">Guests</label>
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={guests}
+              onChange={(e) => setGuests(Math.max(1, Number(e.target.value)))}
+              className="w-full bg-transparent text-sm text-foreground outline-none"
+            />
           </div>
-          <Button
-            onClick={handleSearch}
-            size="lg"
-            className="h-12 w-12 rounded-xl p-0 flex-shrink-0"
-            aria-label="Search"
-          >
-            <Search className="h-5 w-5" />
-          </Button>
         </div>
+      </div>
+
+      {/* Search button — full width on mobile, hidden per-cell */}
+      <div className="px-3 pb-3 pt-0 sm:hidden">
+        <Button onClick={handleSearch} className="w-full h-11 rounded-xl gap-2 font-semibold">
+          <Search className="h-4 w-4" />
+          Search properties
+        </Button>
+      </div>
+
+      {/* Search button — desktop: floating inside last cell handled by lg grid */}
+      <div className="hidden sm:flex px-3 pb-3 pt-0 lg:hidden justify-end">
+        <Button onClick={handleSearch} className="h-10 px-6 rounded-xl gap-2 font-semibold">
+          <Search className="h-4 w-4" />
+          Search
+        </Button>
+      </div>
+
+      {/* Desktop search icon row button — lives outside grid when lg */}
+      <div className="hidden lg:flex justify-end px-3 pb-3 -mt-1">
+        <Button onClick={handleSearch} size="lg" className="h-11 px-7 rounded-xl gap-2 font-semibold">
+          <Search className="h-5 w-5" />
+          Search
+        </Button>
       </div>
     </div>
   )

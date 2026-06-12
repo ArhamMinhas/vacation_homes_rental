@@ -46,7 +46,10 @@ export async function POST(request: NextRequest) {
       parsed.data.guests
     )
     if (!avail.available) {
-      return NextResponse.json({ error: avail.reason ?? "Dates not available" }, { status: 409 })
+      return NextResponse.json(
+        { error: avail.reason ?? "Dates not available", conflictType: avail.conflictType ?? "booking" },
+        { status: 409 }
+      )
     }
 
     const booking = await createBooking(parsed.data, user.id)

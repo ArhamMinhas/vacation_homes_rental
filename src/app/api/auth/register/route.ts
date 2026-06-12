@@ -1,8 +1,25 @@
 import { NextResponse } from "next/server"
 import { registerSchema } from "@/validations/auth.schema"
 import { registerUser } from "@/services/auth.service"
+import { rateLimit, getClientIp } from "@/lib/rate-limit"
 
 export async function POST(request: Request) {
+  // 5 registrations per 10 min per IP — prevents bulk account creation
+  const ip = getClientIp(request)
+  const rl = rateLimit(`register:${ip}`, 5, 10 * 60_000)
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Too many sign-up attempts. Please wait a few minutes and try again." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)),
+          "X-RateLimit-Remaining": "0",
+        },
+      }
+    )
+  }
+
   try {
     const body = await request.json()
     const parsed = registerSchema.safeParse(body)
