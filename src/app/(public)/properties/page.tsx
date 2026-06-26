@@ -1,25 +1,27 @@
 import { Suspense } from "react"
-import { Search, SlidersHorizontal, X } from "lucide-react"
+import { Search } from "lucide-react"
 import { getFilteredProperties, type PropertyFilters } from "@/services/property.service"
 import PropertyCard from "@/components/property/PropertyCard"
 import PropertyCardSkeleton from "@/components/property/PropertyCardSkeleton"
+import PropertyTopFilters from "@/components/property/PropertyTopFilters"
 import EmptyState from "@/components/common/EmptyState"
 import Pagination from "@/components/common/Pagination"
-import { PROPERTY_TYPES } from "@/lib/constants"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = { title: "Properties — LuxeStay" }
 
 const PAGE_SIZE = 12
 
 interface SearchParams {
-  location?: string
+  location?:      string
   property_type?: string
-  min_price?: string
-  max_price?: string
-  bedrooms?: string
-  guests?: string
-  page?: string
+  min_price?:     string
+  max_price?:     string
+  bedrooms?:      string
+  guests?:        string
+  page?:          string
 }
 
-// ── Streaming section — grid + pagination load together ───────────────────────
 async function PropertiesSection({
   filters,
   page,
@@ -29,18 +31,11 @@ async function PropertiesSection({
   page: number
   searchParams: SearchParams
 }) {
-  const result = await getFilteredProperties({ ...filters, page, pageSize: PAGE_SIZE })
-  const { properties, total, totalPages } = result
-
-  if (properties.length === 0) {
-    return (
-      <EmptyState
-        icon={<Search className="h-6 w-6" />}
-        title="No properties found"
-        description="Try adjusting your filters or searching a different location."
-      />
-    )
-  }
+  const { properties, total, totalPages } = await getFilteredProperties({
+    ...filters,
+    page,
+    pageSize: PAGE_SIZE,
+  })
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams()
@@ -55,51 +50,69 @@ async function PropertiesSection({
     return `/properties${qs ? `?${qs}` : ""}`
   }
 
+  if (properties.length === 0) {
+    return (
+      <EmptyState
+        icon={<Search className="h-6 w-6" />}
+        title="No properties found"
+        description="Try adjusting your filters or searching a different location."
+      />
+    )
+  }
+
+  const from = (page - 1) * PAGE_SIZE + 1
+  const to   = Math.min(page * PAGE_SIZE, total)
+
   return (
     <>
-      <p className="text-sm text-muted-foreground mb-5">
-        {total} {total === 1 ? "property" : "properties"} found
-      </p>
+      {/* Result count row */}
+      <div className="flex items-center justify-between mb-5">
+        <p className="text-sm text-gray-500">
+          Showing{" "}
+          <span className="font-semibold text-gray-900">{from}–{to}</span>
+          {" "}of{" "}
+          <span className="font-semibold text-gray-900">{total}</span>
+          {" "}properties
+          {searchParams.location && (
+            <span> in <span className="font-semibold text-gray-900">{searchParams.location}</span></span>
+          )}
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+      {/* 4-column responsive grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {properties.map((property, i) => (
           <div
             key={property.id}
             className="animate-fade-in-up"
-            style={{ animationDelay: `${Math.min(i * 60, 360)}ms` }}
+            style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}
           >
-            <PropertyCard property={property} priority={i < 3} />
+            <PropertyCard property={property} priority={i < 4} />
           </div>
         ))}
       </div>
 
-      <Pagination
-        page={page}
-        totalPages={totalPages}
-        total={total}
-        buildHref={buildHref}
-      />
+      <Pagination page={page} totalPages={totalPages} total={total} buildHref={buildHref} />
     </>
   )
 }
 
 function PropertiesSkeletonGrid() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-      {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      {Array.from({ length: 8 }).map((_, i) => (
         <PropertyCardSkeleton key={i} />
       ))}
     </div>
   )
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
 export default async function PropertiesPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const sp = await searchParams
+  const sp   = await searchParams
   const page = sp.page ? Math.max(1, parseInt(sp.page, 10)) : 1
 
   const filters: PropertyFilters = {
@@ -114,107 +127,44 @@ export default async function PropertiesPage({
   const hasFilters = Object.values(filters).some((v) => v !== undefined)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Header */}
-      <div className="mb-8 animate-fade-in-up">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          {sp.location ? `Properties in "${sp.location}"` : "All Properties"}
-        </h1>
-        {hasFilters && (
-          <p className="text-muted-foreground text-sm mt-1">Showing filtered results</p>
-        )}
-      </div>
+    <div className="min-h-screen bg-[#f9f9ff]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-      {/* Filter bar — always visible, no Suspense */}
-      <form method="get" className="mb-10 animate-fade-in-up delay-100">
-        <div className="bg-card rounded-2xl border border-border shadow-card p-4 sm:p-5">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <div className="col-span-2 sm:col-span-3 lg:col-span-1 space-y-1">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Location
-              </label>
-              <input
-                name="location"
-                defaultValue={sp.location}
-                placeholder="City, country…"
-                className="w-full h-10 rounded-xl border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Type
-              </label>
-              <select
-                name="property_type"
-                defaultValue={sp.property_type ?? ""}
-                className="w-full h-10 rounded-xl border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all"
-              >
-                <option value="">All types</option>
-                {PROPERTY_TYPES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Bedrooms
-              </label>
-              <select
-                name="bedrooms"
-                defaultValue={sp.bedrooms ?? ""}
-                className="w-full h-10 rounded-xl border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all"
-              >
-                <option value="">Any</option>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <option key={n} value={n}>{n}+</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Guests
-              </label>
-              <select
-                name="guests"
-                defaultValue={sp.guests ?? ""}
-                className="w-full h-10 rounded-xl border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all"
-              >
-                <option value="">Any</option>
-                {[1, 2, 4, 6, 8, 10].map((n) => (
-                  <option key={n} value={n}>{n}+</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="col-span-2 sm:col-span-3 lg:col-span-1 flex gap-2 items-end">
-              <button
-                type="submit"
-                className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm"
-              >
-                <SlidersHorizontal className="h-3.5 w-3.5" />
-                Filter
-              </button>
-              {hasFilters && (
-                <a
-                  href="/properties"
-                  className="h-10 px-4 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1.5 flex-shrink-0"
-                >
-                  <X className="h-3.5 w-3.5" />
-                  <span className="hidden xs:inline">Clear</span>
-                </a>
-              )}
-            </div>
-          </div>
+        {/* Horizontal filter bar */}
+        <div className="mb-6 animate-fade-in-up">
+          <PropertyTopFilters
+            location={sp.location}
+            property_type={sp.property_type}
+            min_price={sp.min_price}
+            max_price={sp.max_price}
+            bedrooms={sp.bedrooms}
+            guests={sp.guests}
+          />
         </div>
-      </form>
 
-      {/* Grid + Pagination — stream in together */}
-      <Suspense key={`${JSON.stringify(filters)}-${page}`} fallback={<PropertiesSkeletonGrid />}>
-        <PropertiesSection filters={filters} page={page} searchParams={sp} />
-      </Suspense>
+        {/* Page heading */}
+        <div className="mb-6 animate-fade-in-up" style={{ animationDelay: "60ms" }}>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 font-display tracking-tight">
+            {sp.location ? `Stays in ${sp.location}` : "Vacation Homes"}
+          </h1>
+          {hasFilters && (
+            <p className="text-sm text-gray-500 mt-1">
+              Filters applied —{" "}
+              <a href="/properties" className="text-primary hover:underline font-medium">
+                clear all
+              </a>
+            </p>
+          )}
+        </div>
+
+        {/* Property grid with suspense */}
+        <Suspense
+          key={`${JSON.stringify(filters)}-${page}`}
+          fallback={<PropertiesSkeletonGrid />}
+        >
+          <PropertiesSection filters={filters} page={page} searchParams={sp} />
+        </Suspense>
+      </div>
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import Link from "next/link"
-import { Home, Star, MapPin, Building2, Users } from "lucide-react"
 import LoginForm from "@/components/auth/LoginForm"
+import SocialLoginButtons from "@/components/auth/SocialLoginButtons"
 import { APP_NAME, ROUTES } from "@/lib/constants"
 
 export const metadata = {
@@ -12,126 +12,99 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
 
-      {/* ── Left decorative panel ─────────────────────────── */}
-      <div
-        className="hidden lg:flex lg:w-[46%] xl:w-1/2 relative flex-col p-10 xl:p-14 overflow-hidden overflow-y-auto"
-        style={{
-          background: "linear-gradient(145deg,#0F766E 0%,#0D9488 30%,#0891B2 65%,#1D4ED8 100%)",
-        }}
-      >
-        {/* Background blobs */}
-        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-white/8 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 -left-16 h-56 w-56 rounded-full bg-cyan-300/12 blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(255,255,255,0.1),transparent)] pointer-events-none" />
+      {/* ── Left: luxury photo panel ────────────────────────────── */}
+      <div className="hidden lg:flex lg:w-[42%] xl:w-[45%] relative flex-col overflow-hidden">
+        {/* Background photo */}
         <div
-          className="absolute inset-0 opacity-[0.04]"
+          className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundImage: `url('https://images.unsplash.com/photo-1613977257592-4871e5fcd7c4?auto=format&fit=crop&w=1200&q=85')`,
           }}
         />
+        {/* Bottom gradient overlay for text legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-        {/* 1 ─ Logo */}
-        <div className="relative z-10 animate-fade-in-down flex-shrink-0">
-          <Link href={ROUTES.HOME} className="inline-flex items-center gap-3 group">
-            <div className="h-10 w-10 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center group-hover:bg-white/30 transition-colors">
-              <Home className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-white">{APP_NAME}</span>
+        {/* Logo top-left */}
+        <div className="relative z-10 p-10">
+          <Link href={ROUTES.HOME} className="inline-flex items-center gap-2">
+            <span className="text-xl font-bold font-display">
+              <span className="text-primary">Luxe</span><span className="text-white">Stay</span>
+            </span>
           </Link>
         </div>
 
-        {/* Spacer */}
-        <div className="flex-1 min-h-[48px]" />
-
-        {/* 2 ─ Headline + description */}
-        <div className="relative z-10 animate-fade-in-up flex-shrink-0 space-y-3 mb-8">
-          <span className="inline-block text-xs font-bold text-teal-200 uppercase tracking-[0.15em]">
-            ✦ Welcome back
-          </span>
-          <h1 className="text-3xl xl:text-4xl font-bold text-white leading-tight">
-            Your perfect stay<br />is one click away
-          </h1>
-          <p className="text-teal-100 text-base leading-relaxed max-w-xs">
-            Browse hundreds of hand-picked properties — from oceanfront villas to cozy mountain cabins.
+        {/* Bottom text */}
+        <div className="relative z-10 mt-auto p-10 pb-12">
+          <h2 className="text-3xl xl:text-4xl font-bold text-white leading-tight mb-3">
+            Elevate Your Travel<br />Experience.
+          </h2>
+          <p className="text-white/75 text-sm leading-relaxed max-w-xs">
+            Discover a curated selection of the world&apos;s most breathtaking coastal retreats, where luxury meets the horizon.
           </p>
-        </div>
-
-        {/* 3 ─ Stats */}
-        <div className="relative z-10 animate-fade-in-up delay-100 flex-shrink-0 grid grid-cols-3 gap-3 mb-8">
-          {[
-            { icon: Building2, value: "500+", label: "Properties" },
-            { icon: Users,     value: "10k+", label: "Guests"     },
-            { icon: MapPin,    value: "50+",  label: "Destinations"},
-          ].map(({ icon: Icon, value, label }) => (
-            <div
-              key={label}
-              className="bg-white/10 backdrop-blur-sm rounded-xl p-3.5 border border-white/15 text-center"
-            >
-              <p className="text-white font-bold text-xl leading-none">{value}</p>
-              <div className="flex items-center justify-center gap-1 mt-1.5">
-                <Icon className="h-3 w-3 text-teal-200 flex-shrink-0" />
-                <p className="text-teal-200 text-xs">{label}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* 4 ─ Testimonial */}
-        <div className="relative z-10 animate-fade-in-up delay-200 flex-shrink-0">
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/20 shadow-lg">
-            <div className="flex gap-1 mb-3">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-            <p className="text-white text-sm leading-relaxed italic">
-              &ldquo;StayFinder made our anniversary trip effortless. The property was exactly
-              as described and the booking was seamless.&rdquo;
-            </p>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-teal-300 to-cyan-400 flex items-center justify-center text-teal-900 font-bold text-sm flex-shrink-0">
-                S
-              </div>
-              <div>
-                <p className="text-white text-sm font-medium">Sarah Mitchell</p>
-                <p className="text-teal-200 text-xs">Verified guest · London</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* ── Right form panel ──────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-h-screen bg-background">
-        {/* Mobile top bar */}
-        <div className="lg:hidden flex items-center gap-3 px-6 py-5 border-b border-border/60">
-          <Link href={ROUTES.HOME} className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <Home className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-base font-bold text-foreground">{APP_NAME}</span>
+      {/* ── Right: login form panel ─────────────────────────────── */}
+      <div className="flex-1 flex flex-col bg-white min-h-screen">
+        {/* Mobile logo */}
+        <div className="lg:hidden flex items-center gap-2 px-6 py-5 border-b border-gray-100">
+          <Link href={ROUTES.HOME}>
+            <span className="text-lg font-bold font-display">
+              <span className="text-primary">Luxe</span><span className="text-gray-900">Stay</span>
+            </span>
           </Link>
         </div>
 
-        <div className="flex-1 flex items-center justify-center px-6 py-10 lg:px-12 xl:px-16">
-          <div className="w-full max-w-[400px] animate-fade-in-up">
-            <div className="mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Welcome back</h2>
-              <p className="text-muted-foreground mt-1.5 text-sm">Sign in to your account to continue</p>
+        <div className="flex-1 flex items-center justify-center px-6 py-12 lg:px-14 xl:px-20">
+          <div className="w-full max-w-[400px]">
+
+            {/* Desktop logo */}
+            <div className="hidden lg:block mb-8">
+              <Link href={ROUTES.HOME}>
+                <span className="text-2xl font-bold font-display">
+                  <span className="text-primary">Luxe</span><span className="text-gray-900">Stay</span>
+                </span>
+              </Link>
             </div>
 
+            {/* Heading */}
+            <div className="mb-7">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back</h1>
+              <p className="text-gray-500 text-sm mt-1.5">
+                Please enter your details to access your account
+              </p>
+            </div>
+
+            {/* Login form */}
             <Suspense>
               <LoginForm />
             </Suspense>
 
-            <div className="mt-8 pt-6 border-t border-border">
-              <p className="text-center text-xs text-muted-foreground">
-                Are you an admin?{" "}
-                <Link href={ROUTES.ADMIN_LOGIN} className="text-primary hover:text-primary/80 font-semibold transition-colors">
-                  Admin portal →
-                </Link>
-              </p>
+            {/* Divider */}
+            <div className="flex items-center gap-3 my-6">
+              <div className="flex-1 h-px bg-gray-200" />
+              <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Or continue with</span>
+              <div className="flex-1 h-px bg-gray-200" />
             </div>
+
+            {/* Social buttons */}
+            <SocialLoginButtons action="Log in" />
+
+            {/* Register link */}
+            <p className="text-center text-sm text-gray-500 mt-6">
+              Don&apos;t have an account?{" "}
+              <Link href={ROUTES.REGISTER} className="text-primary font-semibold hover:text-primary/80 transition-colors">
+                Sign up for free
+              </Link>
+            </p>
+
+            {/* Admin link */}
+            <p className="text-center text-xs text-gray-400 mt-4">
+              Are you an admin?{" "}
+              <Link href={ROUTES.ADMIN_LOGIN} className="text-primary/70 hover:text-primary font-medium transition-colors">
+                Admin portal →
+              </Link>
+            </p>
           </div>
         </div>
       </div>

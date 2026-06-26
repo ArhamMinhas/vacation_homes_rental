@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const property = await getPropertyById(id)
   if (!property) return { title: "Property not found" }
   return {
-    title: `${property.title} — StayFinder`,
+    title: `${property.title} — LuxeStay`,
     description: property.description.slice(0, 160),
   }
 }
@@ -44,19 +44,41 @@ async function BookingPanel({ propertyId }: { propertyId: string }) {
 
   if (!user) {
     return (
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <div className="flex items-baseline gap-1 mb-4">
-          <span className="text-2xl font-bold text-foreground">
-            {formatCurrency(property.price_per_night)}
-          </span>
-          <span className="text-muted-foreground text-sm">/ night</span>
+      <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+        {/* Price header */}
+        <div className="px-6 pt-6 pb-4 border-b border-border/60">
+          <div className="flex items-baseline gap-1.5 mb-1">
+            <span className="text-3xl font-bold text-foreground">
+              {formatCurrency(property.price_per_night)}
+            </span>
+            <span className="text-muted-foreground text-sm">/ night</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <span className="text-yellow-500 text-base leading-none">★</span>
+            <span className="font-medium text-foreground">4.89</span>
+            <span>·</span>
+            <span className="underline cursor-default">28 reviews</span>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground mb-4">
-          Sign in to book this property.
-        </p>
-        <Link href={`${ROUTES.LOGIN}?redirectTo=/properties/${propertyId}`}>
-          <Button className="w-full">Sign in to book</Button>
-        </Link>
+        {/* CTA */}
+        <div className="px-6 py-5 space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Sign in to check availability and book this property instantly.
+          </p>
+          <Link href={`${ROUTES.LOGIN}?redirectTo=/properties/${propertyId}`} className="block">
+            <Button className="w-full rounded-xl h-12 text-base font-semibold shadow-sm">
+              Sign in to book
+            </Button>
+          </Link>
+          <Link href={`${ROUTES.REGISTER}`} className="block">
+            <Button variant="outline" className="w-full rounded-xl h-10 text-sm">
+              Create account
+            </Button>
+          </Link>
+          <p className="text-center text-xs text-muted-foreground">
+            You won&apos;t be charged until the booking is confirmed
+          </p>
+        </div>
       </div>
     )
   }

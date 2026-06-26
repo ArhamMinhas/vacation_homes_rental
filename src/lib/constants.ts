@@ -1,5 +1,5 @@
 // Pulled from env so the name can be changed without touching code
-export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "StayFinder"
+export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "LuxeStay"
 export const APP_DESCRIPTION = "Find and book your perfect vacation home"
 
 export const ROUTES = {

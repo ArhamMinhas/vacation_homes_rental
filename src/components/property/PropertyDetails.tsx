@@ -2,11 +2,11 @@ import {
   BedDouble, Bath, Users, MapPin, Home,
   Wifi, Wind, Car, Waves, Tv, Flame, Sun, Leaf, Mountain,
   Coffee, Dumbbell, Anchor, Sparkles, Eye, UtensilsCrossed,
-  ShowerHead, RotateCcw, Thermometer, type LucideIcon,
+  ShowerHead, RotateCcw, Thermometer, Check, Shield, Star, HeartHandshake,
+  type LucideIcon,
 } from "lucide-react"
 import type { Property } from "@/types/property"
 import { Badge } from "@/components/ui/badge"
-import { Check } from "lucide-react"
 
 interface PropertyDetailsProps {
   property: Property
@@ -93,7 +93,7 @@ export default function PropertyDetails({ property }: PropertyDetailsProps) {
 
       {/* Description */}
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-3">About this property</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-3">About this space</h2>
         <p className="text-muted-foreground leading-relaxed whitespace-pre-line text-sm sm:text-base">
           {property.description}
         </p>
@@ -103,21 +103,46 @@ export default function PropertyDetails({ property }: PropertyDetailsProps) {
       {property.amenities.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-4">What this place offers</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {property.amenities.map((amenity) => (
               <div
                 key={amenity}
-                className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-muted/60 transition-colors group"
+                className="flex items-center gap-3 p-3 rounded-xl border border-border/60 hover:border-primary/20 hover:bg-primary/5 transition-all group"
               >
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/15 transition-colors">
+                <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/15 transition-colors">
                   <AmenityIcon amenity={amenity} />
                 </div>
-                <span className="text-sm text-foreground">{amenity}</span>
+                <span className="text-sm text-foreground font-medium">{amenity}</span>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* LuxeStay Guarantee */}
+      <div className="rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/5 to-orange-50/80 p-5 sm:p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Shield className="h-4 w-4 text-primary" />
+          </div>
+          <h2 className="text-base font-semibold text-foreground">LuxeStay Guarantee</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            { icon: Shield,        title: "Secure booking",   desc: "256-bit encrypted payments and secure guest verification" },
+            { icon: Star,          title: "Quality assured",  desc: "Every property is reviewed and meets our quality standards" },
+            { icon: HeartHandshake, title: "24/7 support",    desc: "Our team is available around the clock for any assistance" },
+          ].map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="flex items-start gap-3">
+              <Icon className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-foreground">{title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

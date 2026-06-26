@@ -5,26 +5,42 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
   LayoutDashboard, Building2, CalendarCheck, CalendarOff, Users,
-  Home, X, Menu, LogOut, ExternalLink, ShieldCheck,
+  Home, X, Menu, LogOut, ExternalLink, ShieldCheck, Plus,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ROUTES, APP_NAME } from "@/lib/constants"
+import { createClient } from "@/lib/supabase/client"
 
 const NAV_ITEMS = [
-  { href: ROUTES.ADMIN_DASHBOARD,     label: "Dashboard",     icon: LayoutDashboard, grad: "from-teal-500 to-emerald-500"  },
-  { href: ROUTES.ADMIN_PROPERTIES,    label: "Properties",    icon: Building2,       grad: "from-blue-500 to-cyan-500"     },
-  { href: ROUTES.ADMIN_BOOKINGS,      label: "Bookings",      icon: CalendarCheck,   grad: "from-violet-500 to-purple-500" },
-  { href: ROUTES.ADMIN_BLOCKED_DATES, label: "Blocked Dates", icon: CalendarOff,     grad: "from-amber-500 to-orange-500"  },
-  { href: ROUTES.ADMIN_USERS,         label: "Users",         icon: Users,           grad: "from-rose-500 to-pink-500"     },
+  { href: ROUTES.ADMIN_DASHBOARD,     label: "Dashboard",     icon: LayoutDashboard, grad: "from-orange-500 to-red-600"   },
+  { href: ROUTES.ADMIN_BOOKINGS,      label: "Bookings",      icon: CalendarCheck,   grad: "from-blue-500 to-indigo-600"  },
+  { href: ROUTES.ADMIN_PROPERTIES,    label: "Properties",    icon: Building2,       grad: "from-amber-500 to-orange-500" },
+  { href: ROUTES.ADMIN_BLOCKED_DATES, label: "Blocked Dates", icon: CalendarOff,     grad: "from-rose-500 to-pink-600"    },
+  { href: ROUTES.ADMIN_USERS,         label: "Users",         icon: Users,           grad: "from-emerald-500 to-teal-600" },
 ]
 
 export default function AdminSidebar() {
-  const pathname = usePathname()
-  const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const pathname    = usePathname()
+  const router      = useRouter()
+  const [open,       setOpen]       = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  const [adminName,  setAdminName]  = useState<string>("")
+  const [adminEmail, setAdminEmail] = useState<string>("")
 
   useEffect(() => setOpen(false), [pathname])
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      setAdminEmail(user.email ?? "")
+      setAdminName(user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "Admin")
+    })
+  }, [])
+
+  const initials = adminName
+    ? adminName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : adminEmail?.[0]?.toUpperCase() ?? "A"
 
   const handleLogout = async () => {
     setLoggingOut(true)
@@ -36,9 +52,11 @@ export default function AdminSidebar() {
   }
 
   const NavLinks = ({ onClick }: { onClick?: () => void }) => (
-    <nav className="space-y-1 px-3 flex-1">
+    <nav className="space-y-0.5 px-3 flex-1">
       {NAV_ITEMS.map(({ href, label, icon: Icon, grad }) => {
-        const active = pathname === href || (href !== ROUTES.ADMIN_DASHBOARD && pathname.startsWith(href))
+        const active =
+          pathname === href ||
+          (href !== ROUTES.ADMIN_DASHBOARD && pathname.startsWith(href))
         return (
           <Link
             key={href}
@@ -47,7 +65,7 @@ export default function AdminSidebar() {
             className={cn(
               "group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
               active
-                ? "bg-white/10 text-white shadow-sm border border-white/10"
+                ? "bg-white/12 text-white shadow-sm border border-white/10"
                 : "text-slate-400 hover:bg-white/6 hover:text-slate-200 border border-transparent"
             )}
           >
@@ -63,7 +81,7 @@ export default function AdminSidebar() {
             </div>
             <span className="flex-1">{label}</span>
             {active && (
-              <div className="h-1.5 w-1.5 rounded-full bg-white/70 flex-shrink-0" />
+              <div className="h-1.5 w-1.5 rounded-full bg-white/60 flex-shrink-0" />
             )}
           </Link>
         )
@@ -73,22 +91,20 @@ export default function AdminSidebar() {
 
   const sidebarContent = (isMobile = false) => (
     <>
-      {/* Logo */}
-      <div className={cn(
-        "flex items-center gap-3 px-4 h-16 border-b border-white/8 flex-shrink-0",
-        isMobile && "justify-between"
-      )}>
+      {/* ── Logo ───────────────────────────────────────────────── */}
+      <div
+        className={cn(
+          "flex items-center gap-3 px-5 h-16 border-b border-white/8 flex-shrink-0",
+          isMobile && "justify-between"
+        )}
+      >
         <Link href={ROUTES.HOME} className="flex items-center gap-2.5 group">
-          <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg flex-shrink-0">
+          <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg flex-shrink-0">
             <Home className="h-4 w-4 text-white" />
           </div>
-          <div>
-            <span className="font-bold text-white text-sm">{APP_NAME}</span>
-            <div className="flex items-center gap-1 mt-px">
-              <ShieldCheck className="h-2.5 w-2.5 text-teal-400" />
-              <span className="text-[10px] font-medium text-teal-400 leading-none">Admin</span>
-            </div>
-          </div>
+          <span className="font-bold text-sm font-display">
+            <span className="text-primary">Luxe</span><span className="text-white">Stay</span>
+          </span>
         </Link>
         {isMobile && (
           <button
@@ -101,18 +117,46 @@ export default function AdminSidebar() {
         )}
       </div>
 
-      {/* Nav section label */}
-      <div className="px-6 pt-5 pb-2">
+      {/* ── User profile section ────────────────────────────────── */}
+      <div className="px-4 py-4 border-b border-white/8">
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-md ring-2 ring-orange-500/30">
+            {initials}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-white text-sm font-semibold truncate leading-tight">
+              {adminName || "Administrator"}
+            </p>
+            <div className="flex items-center gap-1 mt-0.5">
+              <ShieldCheck className="h-2.5 w-2.5 text-orange-400" />
+              <span className="text-[10px] font-medium text-orange-400 leading-none">Admin</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Nav section label ───────────────────────────────────── */}
+      <div className="px-6 pt-4 pb-1.5">
         <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.15em]">Navigation</span>
       </div>
 
-      {/* Nav links */}
-      <div className="flex flex-col flex-1 overflow-y-auto pb-4">
+      {/* ── Nav links ───────────────────────────────────────────── */}
+      <div className="flex flex-col flex-1 overflow-y-auto">
         <NavLinks onClick={isMobile ? () => setOpen(false) : undefined} />
       </div>
 
-      {/* Bottom section */}
-      <div className="p-3 border-t border-white/8 space-y-1">
+      {/* ── Add New Listing CTA ─────────────────────────────────── */}
+      <div className="px-4 py-3 border-t border-white/8">
+        <Link href="/admin/properties/create" onClick={isMobile ? () => setOpen(false) : undefined}>
+          <div className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-white text-sm font-semibold shadow-sm cursor-pointer">
+            <Plus className="h-4 w-4" />
+            Add New Listing
+          </div>
+        </Link>
+      </div>
+
+      {/* ── Bottom links ────────────────────────────────────────── */}
+      <div className="px-3 pb-4 space-y-0.5">
         <Link
           href={ROUTES.HOME}
           className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-slate-400 hover:text-slate-200 hover:bg-white/6 transition-all duration-200 border border-transparent hover:border-white/8"
@@ -127,7 +171,7 @@ export default function AdminSidebar() {
           className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all duration-200 border border-transparent hover:border-rose-500/15 disabled:opacity-50"
         >
           <LogOut className="h-4 w-4 flex-shrink-0" />
-          {loggingOut ? "Signing out…" : "Sign out"}
+          {loggingOut ? "Signing out…" : "Logout"}
         </button>
       </div>
     </>
@@ -148,11 +192,13 @@ export default function AdminSidebar() {
           <Menu className="h-5 w-5" />
         </button>
         <div className="flex items-center gap-2">
-          <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center">
+          <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
             <Home className="h-3 w-3 text-white" />
           </div>
-          <span className="font-semibold text-white text-sm">{APP_NAME}</span>
-          <span className="text-[10px] text-teal-400 font-medium px-1.5 py-0.5 bg-teal-500/10 rounded-md border border-teal-500/20">Admin</span>
+          <span className="font-semibold text-sm font-display">
+            <span className="text-primary">Luxe</span><span className="text-white">Stay</span>
+          </span>
+          <span className="text-[10px] text-orange-400 font-medium px-1.5 py-0.5 bg-orange-500/10 rounded-md border border-orange-500/20">Admin</span>
         </div>
         <Link href={ROUTES.HOME} className="ml-auto text-slate-500 hover:text-slate-300 transition-colors">
           <ExternalLink className="h-4 w-4" />
@@ -171,8 +217,7 @@ export default function AdminSidebar() {
       {/* ── Mobile drawer ───────────────────────────────────────── */}
       <aside
         className={cn(
-          "lg:hidden fixed inset-y-0 left-0 z-50 w-64 flex flex-col transition-transform duration-250 ease-out",
-          "border-r border-white/8",
+          "lg:hidden fixed inset-y-0 left-0 z-50 w-64 flex flex-col transition-transform duration-250 ease-out border-r border-white/8",
           open ? "translate-x-0" : "-translate-x-full"
         )}
         style={{ background: "linear-gradient(180deg,#0A0F1E 0%,#060B16 100%)" }}
