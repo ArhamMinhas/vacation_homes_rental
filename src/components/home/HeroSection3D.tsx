@@ -1,145 +1,321 @@
 'use client'
 
-import React, { useRef } from 'react'
-import { motion, useMotionValue, useTransform, useSpring, type Variants } from 'framer-motion'
+import React, { useRef, useEffect, useState } from 'react'
+import {
+  motion, AnimatePresence,
+  useMotionValue, useTransform, useSpring, animate,
+  type Variants,
+} from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Star, Home, Users, MapPin, Wifi, UtensilsCrossed, Car, Waves, Mountain, Sun, Zap } from 'lucide-react'
+import {
+  ArrowRight, Home, MapPin, Wifi, UtensilsCrossed, Car,
+  Waves, Mountain, Sun, Zap, Star, ShieldCheck,
+} from 'lucide-react'
 import { Spotlight } from '@/components/ui/spotlight'
-import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/lib/constants'
 
-const container: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.13, delayChildren: 0.15 },
-  },
-}
+// ── Constants ─────────────────────────────────────────────
+const EASE_OUT  = [0.22, 1, 0.36, 1] as const
 
-const item: Variants = {
-  hidden:  { opacity: 0, y: 22 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
-}
-
-const STATS = [
-  { icon: Home,  value: '10K+', label: 'Properties'  },
-  { icon: Star,  value: '4.9★', label: 'Avg Rating'  },
-  { icon: Users, value: '50K+', label: 'Happy Guests' },
+const WORDS = [
+  { text: 'Dream Escape',  from: '#FF5A1F', via: '#f59e0b', to: '#FF5A1F' },
+  { text: 'Beach Retreat', from: '#38bdf8', via: '#67e8f9', to: '#3b82f6' },
+  { text: 'Alpine Haven',  from: '#34d399', via: '#6ee7b7', to: '#10b981' },
+  { text: 'Desert Oasis',  from: '#fbbf24', via: '#fb923c', to: '#ef4444' },
 ]
 
-const PROPERTY_CARDS = [
+const CARDS = [
   {
-    CardIcon: Waves,
     title: 'Malibu Beach House',
     location: 'California, USA',
     price: '$480',
     rating: '4.97',
-    image: 'from-sky-500/70 via-cyan-400/60 to-blue-600/70',
+    img: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=320&h=140&fit=crop&auto=format',
+    Icon: Waves,
     amenities: [Wifi, UtensilsCrossed, Car],
-    rotate: '-4deg',
-    translateY: '-8px',
+    rotate: '-7deg',
+    top: 68,
     zIndex: 30,
-    delay: 0.5,
+    delay: 0.45,
   },
   {
-    CardIcon: Mountain,
     title: 'Alpine Chalet',
     location: 'Zermatt, Switzerland',
     price: '$620',
     rating: '4.95',
-    image: 'from-emerald-500/70 via-teal-400/60 to-green-600/70',
+    img: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=320&h=140&fit=crop&auto=format',
+    Icon: Mountain,
     amenities: [Wifi, UtensilsCrossed, Car],
-    rotate: '2deg',
-    translateY: '16px',
+    rotate: '1deg',
+    top: 112,
     zIndex: 20,
-    delay: 0.7,
+    delay: 0.65,
   },
   {
-    CardIcon: Sun,
     title: 'Desert Oasis Villa',
     location: 'Sedona, Arizona',
     price: '$380',
     rating: '4.93',
-    image: 'from-amber-500/70 via-orange-400/60 to-red-500/70',
+    img: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=320&h=140&fit=crop&auto=format',
+    Icon: Sun,
     amenities: [Wifi, UtensilsCrossed, Car],
-    rotate: '6deg',
-    translateY: '40px',
+    rotate: '7deg',
+    top: 156,
     zIndex: 10,
-    delay: 0.9,
+    delay: 0.85,
   },
 ]
 
-function PropertyCardStack() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
+const STATS = [
+  { target: 10,  suffix: 'K+', decimals: 0, label: 'Properties'   },
+  { target: 4.9, suffix: '★',  decimals: 1, label: 'Avg Rating'   },
+  { target: 50,  suffix: 'K+', decimals: 0, label: 'Happy Guests' },
+]
 
-  const rotateX = useSpring(useTransform(mouseY, [-200, 200], [8, -8]), { stiffness: 120, damping: 20 })
-  const rotateY = useSpring(useTransform(mouseX, [-200, 200], [-8, 8]), { stiffness: 120, damping: 20 })
+// ── Animated counter ──────────────────────────────────────
+function Counter({ target, suffix, decimals, label }: typeof STATS[0]) {
+  const ref = useRef<HTMLSpanElement>(null)
 
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (!rect) return
-    mouseX.set(e.clientX - rect.left - rect.width / 2)
-    mouseY.set(e.clientY - rect.top - rect.height / 2)
+  useEffect(() => {
+    if (!ref.current) return
+    const ctrl = animate(0, target, {
+      duration: 1.8,
+      delay: 0.9,
+      ease: [0.16, 1, 0.3, 1],
+      onUpdate(v) {
+        if (ref.current) ref.current.textContent = v.toFixed(decimals) + suffix
+      },
+    })
+    return ctrl.stop
+  }, [target, suffix, decimals])
+
+  return (
+    <div>
+      <span ref={ref} className="block text-[15px] font-bold text-white leading-none tabular-nums">
+        {target.toFixed(decimals) + suffix}
+      </span>
+      <span className="block text-[10px] text-neutral-500 mt-0.5">{label}</span>
+    </div>
+  )
+}
+
+// ── Rotating headline word ────────────────────────────────
+function RotatingWord() {
+  const [idx, setIdx] = useState(0)
+  const word          = WORDS[idx]
+
+  useEffect(() => {
+    const id = setInterval(() => setIdx(i => (i + 1) % WORDS.length), 2800)
+    return () => clearInterval(id)
+  }, [])
+
+  return (
+    <span className="block relative min-h-[1.2em] overflow-hidden">
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={idx}
+          className="block"
+          style={{
+            backgroundImage: `linear-gradient(90deg, ${word.from}, ${word.via}, ${word.to})`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+          initial={{ opacity: 0, y: 28, filter: 'blur(6px)' }}
+          animate={{ opacity: 1, y: 0,  filter: 'blur(0px)' }}
+          exit={  { opacity: 0, y: -28, filter: 'blur(6px)' }}
+          transition={{ duration: 0.48, ease: EASE_OUT }}
+        >
+          {word.text}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  )
+}
+
+// ── Magnetic CTA link ─────────────────────────────────────
+function MagneticBtn({ href, children }: { href: string; children: React.ReactNode }) {
+  const ref  = useRef<HTMLAnchorElement>(null)
+  const x    = useMotionValue(0)
+  const y    = useMotionValue(0)
+  const sx   = useSpring(x, { stiffness: 260, damping: 24 })
+  const sy   = useSpring(y, { stiffness: 260, damping: 24 })
+
+  function onMove(e: React.MouseEvent) {
+    const r = ref.current?.getBoundingClientRect()
+    if (!r) return
+    x.set((e.clientX - (r.left + r.width  / 2)) * 0.3)
+    y.set((e.clientY - (r.top  + r.height / 2)) * 0.3)
   }
+  function onLeave() { x.set(0); y.set(0) }
 
-  function handleMouseLeave() {
-    mouseX.set(0)
-    mouseY.set(0)
+  return (
+    <motion.a
+      ref={ref}
+      href={href}
+      style={{ x: sx, y: sy }}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      whileHover={{ scale: 1.04 }}
+      whileTap={{   scale: 0.96 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+      className="inline-flex items-center gap-2 rounded-full px-7 h-12 bg-orange-500 hover:bg-orange-400 text-white font-semibold text-[14px] shadow-2xl shadow-orange-500/35 transition-colors duration-200 select-none cursor-pointer"
+    >
+      {children}
+    </motion.a>
+  )
+}
+
+// ── 3D tilt card stack ────────────────────────────────────
+function CardStack() {
+  const wrap  = useRef<HTMLDivElement>(null)
+  const mx    = useMotionValue(0)
+  const my    = useMotionValue(0)
+  const rotX  = useSpring(useTransform(my, [-200, 200], [ 8, -8]), { stiffness: 140, damping: 22 })
+  const rotY  = useSpring(useTransform(mx, [-200, 200], [-8,  8]), { stiffness: 140, damping: 22 })
+
+  function onMove(e: React.MouseEvent<HTMLDivElement>) {
+    const r = wrap.current?.getBoundingClientRect()
+    if (!r) return
+    mx.set(e.clientX - r.left  - r.width  / 2)
+    my.set(e.clientY - r.top   - r.height / 2)
   }
+  function onLeave() { mx.set(0); my.set(0) }
 
   return (
     <motion.div
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      ref={wrap}
       className="relative w-full h-full flex items-center justify-center"
-      style={{ perspective: '900px' }}
+      style={{ perspective: '1100px' }}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
     >
+      {/* Ambient glow behind stack */}
       <motion.div
-        style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
-        className="relative w-72 h-[420px]"
+        className="absolute w-72 h-72 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(255,90,31,0.22) 0%, transparent 68%)' }}
+        animate={{ scale: [1, 1.18, 1], opacity: [0.5, 0.9, 0.5] }}
+        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
+      {/* Tilt group */}
+      <motion.div
+        style={{ rotateX: rotX, rotateY: rotY, transformStyle: 'preserve-3d' }}
+        className="relative w-72 h-[460px]"
       >
-        {PROPERTY_CARDS.map((card, i) => (
+        {/* Badge — Live Availability — anchored just below card stack */}
+        <motion.div
+          initial={{ opacity: 0, x: -14 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 1.4, duration: 0.5, ease: EASE_OUT }}
+          className="absolute left-0 flex items-center gap-2 px-3.5 py-2 rounded-2xl border border-white/10 z-50"
+          style={{
+            top: '372px',
+            background: 'rgba(10,16,34,0.88)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
+          }}
+        >
+          <span className="relative flex h-2 w-2 shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+          </span>
+          <span className="text-white text-[11px] font-semibold tracking-wide">Live Availability</span>
+        </motion.div>
+
+        {/* Badge — Instant Book — anchored top-right of stack */}
+        <motion.div
+          initial={{ opacity: 0, x: 14 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 1.65, duration: 0.5, ease: EASE_OUT }}
+          className="absolute right-0 flex items-center gap-1.5 px-3.5 py-2 rounded-2xl border border-orange-500/25 z-50"
+          style={{
+            top: '38px',
+            background: 'rgba(255,90,31,0.13)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 8px 24px rgba(255,90,31,0.18)',
+          }}
+        >
+          <ShieldCheck className="h-3.5 w-3.5 text-orange-400" />
+          <span className="text-orange-400 text-[11px] font-bold">Instant Book</span>
+        </motion.div>
+
+        {CARDS.map((card) => (
           <motion.div
             key={card.title}
-            initial={{ opacity: 0, y: 40, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: card.delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="absolute inset-x-0"
-            style={{
-              zIndex: card.zIndex,
-              top: `${i * 28}px`,
-              rotate: card.rotate,
-            }}
+            style={{ zIndex: card.zIndex, top: `${card.top}px`, rotate: card.rotate }}
+            initial={{ opacity: 0, y: 48, scale: 0.88 }}
+            animate={{ opacity: 1, y: 0,  scale: 1    }}
+            transition={{ delay: card.delay, duration: 0.72, ease: EASE_OUT }}
           >
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden shadow-2xl">
-              {/* Property image area */}
-              <div className={`h-32 bg-gradient-to-br ${card.image} flex items-end p-3`}>
-                <card.CardIcon className="h-9 w-9 text-white/80" />
-                <div className="ml-auto flex items-center gap-1 bg-black/30 backdrop-blur-sm rounded-full px-2 py-0.5">
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  <span className="text-white text-xs font-bold">{card.rating}</span>
+            <div
+              className="overflow-hidden rounded-[20px] border border-white/12"
+              style={{
+                background:    'rgba(10, 16, 36, 0.82)',
+                backdropFilter:'blur(24px)',
+                boxShadow:     '0 28px 56px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)',
+              }}
+            >
+              {/* Photo + overlay */}
+              <div className="relative h-[132px] overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={card.img}
+                  alt={card.title}
+                  className="w-full h-full object-cover"
+                  loading="eager"
+                />
+                {/* Dark vignette so text is readable */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1024]/80 via-transparent to-transparent" />
+
+                {/* Property type icon */}
+                <div className="absolute bottom-2.5 left-3 h-8 w-8 rounded-xl bg-black/40 backdrop-blur-sm flex items-center justify-center border border-white/10">
+                  <card.Icon className="h-4 w-4 text-white/90" />
+                </div>
+
+                {/* Rating */}
+                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-black/45 backdrop-blur-sm rounded-full px-2 py-0.5 border border-white/8">
+                  <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
+                  <span className="text-white text-[11px] font-bold">{card.rating}</span>
                 </div>
               </div>
 
-              {/* Card content */}
+              {/* Card body */}
               <div className="p-3.5">
                 <div className="flex items-start justify-between gap-2 mb-1.5">
-                  <p className="text-white text-sm font-semibold leading-tight">{card.title}</p>
-                  <span className="text-primary font-bold text-sm whitespace-nowrap">{card.price}<span className="text-white/40 text-[10px] font-normal">/night</span></span>
+                  <p className="text-white text-[13px] font-semibold leading-tight">{card.title}</p>
+                  <span className="text-orange-400 font-bold text-[13px] whitespace-nowrap tabular-nums">
+                    {card.price}
+                    <span className="text-white/30 text-[10px] font-normal">/nt</span>
+                  </span>
                 </div>
-                <div className="flex items-center gap-1 text-white/50 text-[11px] mb-2.5">
+
+                <div className="flex items-center gap-1 text-white/40 text-[11px] mb-3">
                   <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
                   {card.location}
                 </div>
-                <div className="flex gap-1.5">
+
+                <div className="flex items-center gap-1.5">
                   {card.amenities.map((Icon, j) => (
-                    <div key={j} className="h-6 w-6 rounded-md bg-white/10 flex items-center justify-center">
-                      <Icon className="h-3 w-3 text-white/60" />
+                    <div
+                      key={j}
+                      className="h-6 w-6 rounded-lg flex items-center justify-center border border-white/8"
+                      style={{ background: 'rgba(255,255,255,0.07)' }}
+                    >
+                      <Icon className="h-3 w-3 text-white/55" />
                     </div>
                   ))}
+                  {/* Availability dot row */}
+                  <div className="ml-auto flex items-center gap-1">
+                    {[...Array(5)].map((_, k) => (
+                      <span
+                        key={k}
+                        className="h-1 w-1 rounded-full"
+                        style={{ background: k < 4 ? '#f97316' : 'rgba(255,255,255,0.15)' }}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -147,136 +323,141 @@ function PropertyCardStack() {
         ))}
       </motion.div>
 
-      {/* Floating badge — "Live Availability" */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1.3, duration: 0.5 }}
-        className="absolute bottom-8 left-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-3 py-2 flex items-center gap-2 shadow-xl"
-      >
-        <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-        <span className="text-white text-xs font-medium">Live Availability</span>
-      </motion.div>
-
-      {/* Floating badge — instant book */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1.5, duration: 0.5 }}
-        className="absolute top-6 right-2 bg-primary/20 backdrop-blur-md border border-primary/30 rounded-xl px-3 py-2 shadow-xl"
-      >
-        <p className="text-primary text-[11px] font-bold flex items-center gap-1">
-          <Zap className="h-3 w-3 fill-primary" />
-          Instant Book
-        </p>
-      </motion.div>
     </motion.div>
   )
 }
 
+// ── Stagger presets ───────────────────────────────────────
+const container: Variants = {
+  hidden:  { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
+}
+const item: Variants = {
+  hidden:  { opacity: 0, y: 26 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.62, ease: EASE_OUT } },
+}
+
+// ── Hero ──────────────────────────────────────────────────
 export function HeroSection3D() {
   return (
-    <section className="relative w-full min-h-[600px] lg:h-[700px] bg-[#080d1a] overflow-hidden">
+    <section className="relative w-full min-h-[640px] lg:min-h-[720px] bg-[#060b18] overflow-hidden">
 
-      {/* Ambient gradient orbs — perpetual motion */}
-      <motion.div
-        className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-primary/20 blur-[120px] pointer-events-none"
-        animate={{ x: [0, 30, 0], y: [0, 20, 0], scale: [1, 1.1, 1] }}
-        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
-        className="absolute -bottom-24 right-1/3 w-[400px] h-[400px] rounded-full bg-amber-500/10 blur-[100px] pointer-events-none"
-        animate={{ x: [0, -20, 0], y: [0, -30, 0], scale: [1, 1.15, 1] }}
-        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-      />
-      <motion.div
-        className="absolute top-1/3 right-0 w-[300px] h-[300px] rounded-full bg-blue-600/10 blur-[80px] pointer-events-none"
-        animate={{ x: [0, -15, 0], y: [0, 25, 0], scale: [1, 1.2, 1] }}
-        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
-      />
+      {/* Ambient mesh orbs */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div
+          className="absolute -top-48 -left-48 w-[700px] h-[700px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(255,90,31,0.14) 0%, transparent 62%)' }}
+          animate={{ x: [0, 30, 0], y: [0, 20, 0], scale: [1, 1.08, 1] }}
+          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute top-1/4 right-0 w-[520px] h-[520px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(79,70,229,0.07) 0%, transparent 65%)' }}
+          animate={{ x: [0, -22, 0], y: [0, 28, 0], scale: [1, 1.12, 1] }}
+          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
+        />
+        <motion.div
+          className="absolute -bottom-40 right-1/3 w-[440px] h-[440px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.07) 0%, transparent 65%)' }}
+          animate={{ x: [0, -18, 0], y: [0, -26, 0], scale: [1, 1.14, 1] }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 5 }}
+        />
+      </div>
 
-      {/* Interactive mouse spotlight */}
-      <Spotlight size={420} />
-
-      {/* Dot-grid texture */}
+      {/* Fine dot-grid */}
       <div
-        className="absolute inset-0 opacity-[0.035] pointer-events-none"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.6) 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.55) 1px, transparent 1px)',
+          backgroundSize: '26px 26px',
+          opacity: 0.025,
         }}
       />
 
+      {/* Diagonal light streaks */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[{ left: '36%', h: '48vh', delay: 0 }, { left: '52%', h: '36vh', delay: 0 }].map((s, i) => (
+          <div
+            key={i}
+            className="absolute -top-20 w-px"
+            style={{
+              left: s.left,
+              height: s.h,
+              background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.07), transparent)',
+              transform: 'rotate(18deg)',
+              opacity: i === 0 ? 1 : 0.6,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Horizontal shimmer line */}
+      <motion.div
+        className="absolute top-0 left-0 right-0 h-px pointer-events-none"
+        style={{ background: 'linear-gradient(90deg, transparent, rgba(255,90,31,0.35), transparent)' }}
+        animate={{ opacity: [0.3, 0.7, 0.3] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
+      <Spotlight size={500} />
+
       <div className="relative z-10 h-full flex flex-col lg:flex-row items-center max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
 
-        {/* ── LEFT: animated text ─────────────────────────── */}
-        <div className="flex-1 py-14 lg:py-0 flex flex-col justify-center">
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="visible"
-            className="max-w-[540px]"
-          >
+        {/* ── LEFT copy ──────────────────────────────── */}
+        <div className="flex-1 py-16 lg:py-0 flex flex-col justify-center">
+          <motion.div variants={container} initial="hidden" animate="visible" className="max-w-[560px]">
+
+            {/* Pill */}
             <motion.div variants={item}>
-              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/15 border border-primary/25 text-primary text-[11px] font-bold tracking-widest uppercase mb-7 select-none">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/8 text-orange-400 text-[10.5px] font-bold tracking-[0.15em] uppercase mb-7 select-none">
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse" />
                 Premium Vacation Rentals
               </span>
             </motion.div>
 
+            {/* Headline with rotating word */}
             <motion.h1
               variants={item}
-              className="text-4xl sm:text-5xl lg:text-[3.6rem] font-bold font-display leading-[1.1] tracking-tight mb-5"
+              className="text-[2.5rem] sm:text-5xl lg:text-[3.5rem] font-bold font-display tracking-tight mb-5"
+              style={{ lineHeight: 1.08 }}
             >
-              <span className="text-white">Discover Your</span>
-              <br />
-              <span className="hero-shimmer-text">Dream Escape</span>
-              <br />
-              <span className="text-neutral-400 text-3xl sm:text-4xl lg:text-[2.8rem]">
-                Anywhere in the World
-              </span>
+              <span className="block text-white mb-1">Discover Your</span>
+              <RotatingWord />
             </motion.h1>
 
-            <motion.p variants={item} className="text-neutral-400 text-sm sm:text-base leading-relaxed mb-8 max-w-md">
-              Luxury villas, coastal retreats, mountain hideaways — curated for travellers who demand the extraordinary.
+            <motion.p
+              variants={item}
+              className="text-neutral-400 text-[15px] leading-[1.7] mb-8 max-w-[430px]"
+            >
+              Luxury villas, coastal retreats, mountain hideaways - curated for travellers who demand the extraordinary.
             </motion.p>
 
+            {/* CTAs */}
             <motion.div variants={item} className="flex flex-wrap items-center gap-3 mb-10">
-              <Link href={ROUTES.PROPERTIES}>
-                <Button
-                  size="lg"
-                  className="rounded-full px-7 h-12 bg-primary hover:bg-primary/90 text-white font-semibold gap-2 shadow-xl shadow-primary/30 transition-all duration-200 hover:shadow-primary/50 hover:scale-[1.02]"
-                >
-                  Browse Properties
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
+              <MagneticBtn href={ROUTES.PROPERTIES}>
+                Browse Properties
+                <ArrowRight className="h-4 w-4" />
+              </MagneticBtn>
+
               <Link href={ROUTES.REGISTER}>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="rounded-full px-7 h-12 border-white/15 bg-white/5 text-white hover:bg-white/12 font-semibold gap-2 backdrop-blur-sm transition-all duration-200"
+                <motion.div
+                  whileHover={{ borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.1)' }}
+                  whileTap={{ scale: 0.96 }}
+                  className="inline-flex items-center gap-2 rounded-full px-7 h-12 border border-white/10 bg-white/5 text-white font-semibold text-[14px] cursor-pointer select-none transition-colors duration-200"
                 >
                   <Home className="h-4 w-4" />
                   List Your Home
-                </Button>
+                </motion.div>
               </Link>
             </motion.div>
 
-            <motion.div variants={item} className="flex items-center gap-4 sm:gap-6">
-              {STATS.map(({ icon: Icon, value, label }, i) => (
-                <React.Fragment key={label}>
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-white/8 flex items-center justify-center flex-shrink-0">
-                      <Icon className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-[15px] font-bold text-white leading-none">{value}</p>
-                      <p className="text-[10px] text-neutral-500 mt-0.5">{label}</p>
-                    </div>
-                  </div>
+            {/* Stats — animated counters */}
+            <motion.div variants={item} className="flex items-center gap-6">
+              {STATS.map((s, i) => (
+                <React.Fragment key={s.label}>
+                  <Counter {...s} />
                   {i < STATS.length - 1 && (
-                    <div className="h-8 w-px bg-white/10 flex-shrink-0" />
+                    <div className="h-7 w-px bg-white/8 flex-shrink-0" />
                   )}
                 </React.Fragment>
               ))}
@@ -284,18 +465,17 @@ export function HeroSection3D() {
           </motion.div>
         </div>
 
-        {/* ── RIGHT: 3D property card stack ──────────────── */}
-        <div className="flex-1 relative w-full h-[420px] lg:h-full">
-          <PropertyCardStack />
-          {/* Left edge fade */}
-          <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#080d1a] to-transparent pointer-events-none" />
-          {/* Bottom fade */}
-          <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-[#080d1a] to-transparent pointer-events-none" />
+        {/* ── RIGHT card stack ────────────────────────── */}
+        <div className="flex-1 relative w-full h-[480px] lg:h-full lg:min-h-[640px]">
+          <CardStack />
+          {/* Edge fades */}
+          <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#060b18] to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-[#060b18] to-transparent pointer-events-none" />
         </div>
       </div>
 
-      {/* Fade into page background — subtle dark fade, transition handled by search section */}
-      <div className="absolute bottom-0 inset-x-0 h-8 bg-gradient-to-t from-[#080d1a] to-transparent pointer-events-none" />
+      {/* Fade into search section */}
+      <div className="absolute bottom-0 inset-x-0 h-10 bg-gradient-to-t from-[#060b18] to-transparent pointer-events-none" />
     </section>
   )
 }

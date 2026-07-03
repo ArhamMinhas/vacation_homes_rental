@@ -96,7 +96,14 @@ export default function Navbar() {
 
           {/* Logo */}
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <Link href={ROUTES.HOME} className="flex items-center shrink-0">
+            <Link href={ROUTES.HOME} className="flex items-center gap-2.5 shrink-0">
+              <div className="relative h-8 w-8 overflow-hidden rounded-lg bg-primary flex items-center justify-center shadow-sm">
+                <img
+                  src="/logo.png"
+                  alt="Coastal Horizon Logo"
+                  className="h-full w-full object-cover select-none"
+                />
+              </div>
               <span className="text-xl font-bold font-display tracking-tight">
                 <span className={cn("transition-colors duration-300", isTransparent ? "text-white" : "text-primary")}>
                   Coastal

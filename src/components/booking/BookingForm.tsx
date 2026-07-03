@@ -5,7 +5,8 @@ import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Loader2, CalendarX, CheckCircle2, Lock } from "lucide-react"
+import Link from "next/link"
+import { Loader2, CalendarX, CheckCircle2, Lock, Sparkles, MapPin, BedDouble } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { bookingSchema, type BookingInput } from "@/validations/booking.schema"
 import { calculateNights } from "@/utils/calculateNights"
@@ -41,6 +42,10 @@ export default function BookingForm({ property, unavailable }: BookingFormProps)
   const [checkOut,        setCheckOut]        = useState("")
   const [guests,          setGuests]          = useState(1)
 
+  type Rec = { id: string; reason: string; property: Property }
+  const [recommendations, setRecommendations] = useState<Rec[]>([])
+  const [loadingRecs,     setLoadingRecs]     = useState(false)
+
   const nights = checkIn && checkOut ? calculateNights(checkIn, checkOut) : 0
 
   const {
@@ -66,9 +71,23 @@ export default function BookingForm({ property, unavailable }: BookingFormProps)
   const showConflict = (msg: string, type: "booking" | "blocked") => {
     setConflictType(type)
     setConflictMessage(msg)
+    setRecommendations([])
+    setLoadingRecs(true)
+    fetch("/api/ai/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ property_id: property.id, check_in: checkIn, check_out: checkOut, guests }),
+    })
+      .then((r) => r.json())
+      .then((d) => setRecommendations(d.recommendations ?? []))
+      .catch(() => {})
+      .finally(() => setLoadingRecs(false))
   }
 
-  const clearConflict = () => setConflictMessage(null)
+  const clearConflict = () => {
+    setConflictMessage(null)
+    setRecommendations([])
+  }
 
   const onSubmit = async (data: BookingInput) => {
     if (!checkIn || !checkOut) {
@@ -341,6 +360,48 @@ export default function BookingForm({ property, unavailable }: BookingFormProps)
               : "Please select dates that don't overlap with the existing reservation."
             }
           </p>
+
+          {/* AI-powered alternative recommendations */}
+          {(loadingRecs || recommendations.length > 0) && (
+            <div className="space-y-3 border-t border-border pt-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <p className="text-xs font-semibold text-foreground uppercase tracking-wide">AI-recommended alternatives</p>
+              </div>
+              {loadingRecs ? (
+                <div className="flex items-center gap-2 py-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground">Finding similar properties…</p>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {recommendations.map((rec) => (
+                    <Link key={rec.id} href={ROUTES.PROPERTY_DETAIL(rec.id)} onClick={clearConflict} className="block group">
+                      <div className="flex gap-3 p-2.5 rounded-xl border border-border hover:border-primary/30 hover:bg-primary/5 transition-all">
+                        {rec.property.images?.[0] ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={rec.property.images[0]} alt={rec.property.title} className="h-14 w-14 object-cover rounded-lg flex-shrink-0" />
+                        ) : (
+                          <div className="h-14 w-14 rounded-lg bg-muted flex-shrink-0" />
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">{rec.property.title}</p>
+                          <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                            <MapPin className="h-2.5 w-2.5 flex-shrink-0" />{rec.property.location}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[11px] font-bold text-primary">{formatCurrency(rec.property.price_per_night)}<span className="font-normal text-muted-foreground">/night</span></span>
+                            <span className="text-[11px] text-muted-foreground flex items-center gap-0.5"><BedDouble className="h-2.5 w-2.5" />{rec.property.bedrooms} bed</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1 italic">{rec.reason}</p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <DialogFooter className="flex-col gap-2 sm:flex-row">
             <Button className="w-full rounded-xl" onClick={clearConflict}>

@@ -126,7 +126,7 @@ export default function HomePage() {
       <HeroSection3D />
 
       {/* â”€â”€ Search bar below hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <section className="px-4 pb-8 pt-0 bg-gradient-to-b from-[#080d1a] via-[#0d1428] to-[#f9f9ff]">
+      <section className="-mt-px px-4 pb-8 pt-0 bg-gradient-to-b from-[#060b18] via-[#0d1428] to-[#f9f9ff]">
         <div className="max-w-4xl mx-auto pt-6">
           <PropertyFilters />
         </div>

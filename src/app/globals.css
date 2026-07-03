@@ -309,6 +309,13 @@ a[href]:active,
   }
 }
 
+/* ─── Slide progress (booking success) ───────────────── */
+
+@keyframes slide-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
 /* ─── Scrollbar ───────────────────────────────────────── */
 
 .scrollbar-thin::-webkit-scrollbar {

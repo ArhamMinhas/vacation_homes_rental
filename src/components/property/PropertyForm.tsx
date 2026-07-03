@@ -4,7 +4,7 @@ import { useState, useRef } from "react"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
-import { Plus, Trash2, Loader2, Upload, X, ImagePlus } from "lucide-react"
+import { Plus, Trash2, Loader2, Upload, X, ImagePlus, Sparkles } from "lucide-react"
 import {
   propertyFormSchema,
   propertySchema,
@@ -58,6 +58,7 @@ export default function PropertyForm({ property }: PropertyFormProps) {
   const [imageError, setImageError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null)
+  const [generatingDesc, setGeneratingDesc] = useState(false)
 
   // image_urls managed as local state; synced to RHF only for non-critical fields
   const [imageUrls, setImageUrls] = useState<string[]>(
@@ -107,6 +108,36 @@ export default function PropertyForm({ property }: PropertyFormProps) {
 
   const updateImageUrl = (i: number, val: string) =>
     setImageUrls((prev) => prev.map((u, idx) => (idx === i ? val : u)))
+
+  const generateDescription = async () => {
+    const values = {
+      title:         (document.getElementById("title") as HTMLInputElement)?.value,
+      property_type: undefined as string | undefined,
+      location:      (document.getElementById("location") as HTMLInputElement)?.value,
+      bedrooms:      Number((document.getElementById("bedrooms") as HTMLInputElement)?.value) || 1,
+      bathrooms:     Number((document.getElementById("bathrooms") as HTMLInputElement)?.value) || 1,
+      max_guests:    Number((document.getElementById("max_guests") as HTMLInputElement)?.value) || 1,
+      amenities:     selectedAmenities,
+    }
+    if (!values.title || !values.location) {
+      setServerError("Fill in the title and location first, then generate a description.")
+      return
+    }
+    setGeneratingDesc(true)
+    try {
+      const res  = await fetch("/api/ai/generate-description", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(values),
+      })
+      const data = await res.json()
+      if (data.description) setValue("description", data.description)
+    } catch {
+      setServerError("AI description generation failed. Please try again.")
+    } finally {
+      setGeneratingDesc(false)
+    }
+  }
 
   const toggleAmenity = (a: string) => {
     const updated = selectedAmenities.includes(a)
@@ -278,7 +309,22 @@ export default function PropertyForm({ property }: PropertyFormProps) {
           </div>
 
           <div className="sm:col-span-2 space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="description">Description</Label>
+              <button
+                type="button"
+                onClick={generateDescription}
+                disabled={generatingDesc}
+                className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 disabled:opacity-50 transition-colors"
+              >
+                {generatingDesc ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Sparkles className="h-3 w-3" />
+                )}
+                {generatingDesc ? "Generating…" : "Generate with AI"}
+              </button>
+            </div>
             <Textarea
               id="description"
               placeholder="Describe this property…"

@@ -177,41 +177,42 @@ export default function PropertyCard({ property, priority }: Props) {
             </>
           )}
 
-          {/* Verified badge */}
-          {verified && (
-            <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1 bg-white/95 backdrop-blur-sm text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">
-              <ShieldCheck className="h-3 w-3" />
-              VERIFIED
+          {/* Top badges and heart overlay */}
+          <div className="absolute top-2.5 inset-x-2.5 z-10 flex items-center justify-between pointer-events-none">
+            <div className="flex items-center gap-1.5 pointer-events-auto">
+              {verified && (
+                <div className="flex items-center gap-1 bg-white/95 backdrop-blur-sm text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">
+                  <ShieldCheck className="h-3 w-3" />
+                  VERIFIED
+                </div>
+              )}
+              <div className={cn(
+                "text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm backdrop-blur-sm",
+                badge.cls
+              )}>
+                {badge.label}
+              </div>
             </div>
-          )}
 
-          {/* Status badge */}
-          <div className={cn(
-            "absolute top-2.5 right-10 z-10 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm backdrop-blur-sm",
-            badge.cls
-          )}>
-            {badge.label}
-          </div>
-
-          {/* Heart button */}
-          <motion.button
-            className={cn(
-              "absolute top-2.5 right-2.5 z-10 h-7 w-7 rounded-full flex items-center justify-center shadow-sm transition-colors",
-              liked ? "bg-primary text-white" : "bg-white/90 backdrop-blur-sm text-gray-400 hover:text-primary"
-            )}
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLiked(p => !p) }}
-            whileTap={{ scale: 0.85 }}
-            whileHover={{ scale: 1.1 }}
-            aria-label={liked ? "Remove from wishlist" : "Save to wishlist"}
-            type="button"
-          >
-            <motion.div
-              animate={liked ? { scale: [1, 1.4, 1] } : { scale: 1 }}
-              transition={{ duration: 0.3 }}
+            <motion.button
+              className={cn(
+                "h-7 w-7 rounded-full flex items-center justify-center shadow-sm transition-colors pointer-events-auto",
+                liked ? "bg-primary text-white" : "bg-white/90 backdrop-blur-sm text-gray-400 hover:text-primary"
+              )}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLiked(p => !p) }}
+              whileTap={{ scale: 0.85 }}
+              whileHover={{ scale: 1.1 }}
+              aria-label={liked ? "Remove from wishlist" : "Save to wishlist"}
+              type="button"
             >
-              <Heart className={cn("h-3.5 w-3.5 transition-all", liked && "fill-white")} />
-            </motion.div>
-          </motion.button>
+              <motion.div
+                animate={liked ? { scale: [1, 1.4, 1] } : { scale: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Heart className={cn("h-3.5 w-3.5 transition-all", liked && "fill-white")} />
+              </motion.div>
+            </motion.button>
+          </div>
 
           {/* Price chip — slides up on hover */}
           <AnimatePresence>

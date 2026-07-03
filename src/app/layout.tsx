@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Inter, Outfit } from "next/font/google"
 import "./globals.css"
+import BookingAssistant from "@/components/ai/BookingAssistant"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,7 +33,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        {children}
+        <BookingAssistant />
+      </body>
     </html>
   )
 }

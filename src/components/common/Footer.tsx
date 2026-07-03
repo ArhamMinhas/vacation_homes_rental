@@ -85,8 +85,12 @@ export default function Footer() {
           {/* Brand column */}
           <FadeInUp className="col-span-2 lg:col-span-1 space-y-5">
             <Link href={ROUTES.HOME} className="inline-flex items-center gap-2.5 group">
-              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg flex-shrink-0 group-hover:scale-105 transition-transform">
-                <Home className="h-4 w-4 text-white" />
+              <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center shadow-lg flex-shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
+                <img
+                  src="/logo.png"
+                  alt="Coastal Horizon Logo"
+                  className="h-full w-full object-cover select-none"
+                />
               </div>
               <span className="text-base font-bold font-display">
                 <span className="text-primary">Coastal</span>
