@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   LayoutDashboard, Building2, CalendarCheck, CalendarOff, Users,
   Home, X, Menu, LogOut, ExternalLink, ShieldCheck, Plus,
@@ -63,25 +64,44 @@ export default function AdminSidebar() {
             href={href}
             onClick={onClick}
             className={cn(
-              "group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+              "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150",
               active
-                ? "bg-white/12 text-white shadow-sm border border-white/10"
-                : "text-slate-400 hover:bg-white/6 hover:text-slate-200 border border-transparent"
+                ? "text-white"
+                : "text-slate-400 hover:text-slate-200"
             )}
           >
-            <div
+            {/* Sliding active background */}
+            {active && (
+              <motion.div
+                layoutId="admin-nav-active"
+                className="absolute inset-0 rounded-xl bg-white/12 border border-white/10 shadow-sm"
+                transition={{ type: "spring", stiffness: 380, damping: 32 }}
+              />
+            )}
+            {/* Hover background (only when not active) */}
+            {!active && (
+              <motion.div
+                className="absolute inset-0 rounded-xl bg-white/6 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+              />
+            )}
+            <motion.div
               className={cn(
-                "h-7 w-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200",
+                "relative h-7 w-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200",
                 active
                   ? `bg-gradient-to-br ${grad} shadow-md`
                   : "bg-white/8 group-hover:bg-white/12"
               )}
+              whileHover={!active ? { scale: 1.1, rotate: 4, transition: { duration: 0.15 } } : undefined}
             >
               <Icon className="h-3.5 w-3.5 text-white" />
-            </div>
-            <span className="flex-1">{label}</span>
+            </motion.div>
+            <span className="relative flex-1">{label}</span>
             {active && (
-              <div className="h-1.5 w-1.5 rounded-full bg-white/60 flex-shrink-0" />
+              <motion.div
+                className="relative h-1.5 w-1.5 rounded-full bg-white/60 flex-shrink-0"
+                layoutId="admin-nav-dot"
+                transition={{ type: "spring", stiffness: 380, damping: 32 }}
+              />
             )}
           </Link>
         )
@@ -103,7 +123,7 @@ export default function AdminSidebar() {
             <Home className="h-4 w-4 text-white" />
           </div>
           <span className="font-bold text-sm font-display">
-            <span className="text-primary">Luxe</span><span className="text-white">Stay</span>
+            <span className="text-primary">Coastal</span><span className="text-white">Horizon</span>
           </span>
         </Link>
         {isMobile && (
@@ -196,7 +216,7 @@ export default function AdminSidebar() {
             <Home className="h-3 w-3 text-white" />
           </div>
           <span className="font-semibold text-sm font-display">
-            <span className="text-primary">Luxe</span><span className="text-white">Stay</span>
+            <span className="text-primary">Coastal</span><span className="text-white">Horizon</span>
           </span>
           <span className="text-[10px] text-orange-400 font-medium px-1.5 py-0.5 bg-orange-500/10 rounded-md border border-orange-500/20">Admin</span>
         </div>
@@ -206,24 +226,36 @@ export default function AdminSidebar() {
       </div>
 
       {/* ── Mobile backdrop ─────────────────────────────────────── */}
-      <div
-        className={cn(
-          "lg:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm transition-opacity duration-200",
-          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            key="backdrop"
+            className="lg:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setOpen(false)}
+          />
         )}
-        onClick={() => setOpen(false)}
-      />
+      </AnimatePresence>
 
       {/* ── Mobile drawer ───────────────────────────────────────── */}
-      <aside
-        className={cn(
-          "lg:hidden fixed inset-y-0 left-0 z-50 w-64 flex flex-col transition-transform duration-250 ease-out border-r border-white/8",
-          open ? "translate-x-0" : "-translate-x-full"
+      <AnimatePresence>
+        {open && (
+          <motion.aside
+            key="drawer"
+            className="lg:hidden fixed inset-y-0 left-0 z-50 w-64 flex flex-col border-r border-white/8"
+            style={{ background: "linear-gradient(180deg,#0A0F1E 0%,#060B16 100%)" }}
+            initial={{ x: -256 }}
+            animate={{ x: 0 }}
+            exit={{ x: -256 }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+          >
+            {sidebarContent(true)}
+          </motion.aside>
         )}
-        style={{ background: "linear-gradient(180deg,#0A0F1E 0%,#060B16 100%)" }}
-      >
-        {sidebarContent(true)}
-      </aside>
+      </AnimatePresence>
 
       {/* ── Desktop sidebar ─────────────────────────────────────── */}
       <aside
@@ -235,3 +267,4 @@ export default function AdminSidebar() {
     </>
   )
 }
+

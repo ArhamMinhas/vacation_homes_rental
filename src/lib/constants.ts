@@ -1,5 +1,5 @@
 // Pulled from env so the name can be changed without touching code
-export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "LuxeStay"
+export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "Coastal Horizon"
 export const APP_DESCRIPTION = "Find and book your perfect vacation home"
 
 export const ROUTES = {
@@ -10,6 +10,8 @@ export const ROUTES = {
   REGISTER: "/auth/register",
   USER_DASHBOARD: "/dashboard",
   USER_BOOKINGS: "/bookings",
+  USER_NOTIFICATIONS: "/notifications",
+  BOOKING_PAYMENT: (id: string) => `/bookings/${id}/payment`,
   ADMIN_LOGIN: "/admin/login",
   ADMIN_DASHBOARD: "/admin/dashboard",
   ADMIN_PROPERTIES: "/admin/properties",

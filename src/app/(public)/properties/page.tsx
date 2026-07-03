@@ -1,14 +1,15 @@
 import { Suspense } from "react"
-import { Search } from "lucide-react"
+import { Search, SlidersHorizontal } from "lucide-react"
 import { getFilteredProperties, type PropertyFilters } from "@/services/property.service"
 import PropertyCard from "@/components/property/PropertyCard"
 import PropertyCardSkeleton from "@/components/property/PropertyCardSkeleton"
 import PropertyTopFilters from "@/components/property/PropertyTopFilters"
 import EmptyState from "@/components/common/EmptyState"
 import Pagination from "@/components/common/Pagination"
+import { PropertiesGrid } from "@/components/property/PropertiesGrid"
 import type { Metadata } from "next"
 
-export const metadata: Metadata = { title: "Properties — LuxeStay" }
+export const metadata: Metadata = { title: "Properties — Coastal Horizon" }
 
 const PAGE_SIZE = 12
 
@@ -65,8 +66,7 @@ async function PropertiesSection({
 
   return (
     <>
-      {/* Result count row */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-6">
         <p className="text-sm text-gray-500">
           Showing{" "}
           <span className="font-semibold text-gray-900">{from}–{to}</span>
@@ -74,23 +74,16 @@ async function PropertiesSection({
           <span className="font-semibold text-gray-900">{total}</span>
           {" "}properties
           {searchParams.location && (
-            <span> in <span className="font-semibold text-gray-900">{searchParams.location}</span></span>
+            <span> in <span className="font-semibold text-primary">{searchParams.location}</span></span>
           )}
         </p>
+        <div className="flex items-center gap-2 text-xs text-gray-400">
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          <span>{total} total</span>
+        </div>
       </div>
 
-      {/* 4-column responsive grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-        {properties.map((property, i) => (
-          <div
-            key={property.id}
-            className="animate-fade-in-up"
-            style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}
-          >
-            <PropertyCard property={property} priority={i < 4} />
-          </div>
-        ))}
-      </div>
+      <PropertiesGrid properties={properties} />
 
       <Pagination page={page} totalPages={totalPages} total={total} buildHref={buildHref} />
     </>
@@ -128,10 +121,38 @@ export default async function PropertiesPage({
 
   return (
     <div className="min-h-screen bg-[#f9f9ff]">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Page header — cinematic treatment */}
+      <div className="relative overflow-hidden" style={{ background: "linear-gradient(135deg, #080d1a 0%, #0f1826 60%, #0a1020 100%)" }}>
+        {/* Ambient orbs */}
+        <div className="absolute -top-16 left-1/4 w-80 h-80 rounded-full bg-primary/12 blur-[90px] pointer-events-none" />
+        <div className="absolute top-0 right-1/3 w-64 h-64 rounded-full bg-blue-600/8 blur-[70px] pointer-events-none" />
+        {/* Dot grid texture */}
+        <div
+          className="absolute inset-0 opacity-[0.025] pointer-events-none"
+          style={{
+            backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+        />
 
-        {/* Horizontal filter bar */}
-        <div className="mb-6 animate-fade-in-up">
+        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
+          <div className="mb-4">
+            <h1 className="text-xl sm:text-2xl font-bold text-white font-display tracking-tight">
+              {sp.location ? `Stays in ${sp.location}` : "All Vacation Homes"}
+            </h1>
+            {hasFilters ? (
+              <p className="text-sm text-white/40 mt-0.5">
+                Filters applied —{" "}
+                <a href="/properties" className="text-primary hover:text-primary/80 font-medium transition-colors">
+                  clear all
+                </a>
+              </p>
+            ) : (
+              <p className="text-sm text-white/40 mt-0.5">Handpicked coastal retreats and luxury villas</p>
+            )}
+          </div>
+
+          {/* Filter bar */}
           <PropertyTopFilters
             location={sp.location}
             property_type={sp.property_type}
@@ -142,22 +163,12 @@ export default async function PropertiesPage({
           />
         </div>
 
-        {/* Page heading */}
-        <div className="mb-6 animate-fade-in-up" style={{ animationDelay: "60ms" }}>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 font-display tracking-tight">
-            {sp.location ? `Stays in ${sp.location}` : "Vacation Homes"}
-          </h1>
-          {hasFilters && (
-            <p className="text-sm text-gray-500 mt-1">
-              Filters applied —{" "}
-              <a href="/properties" className="text-primary hover:underline font-medium">
-                clear all
-              </a>
-            </p>
-          )}
-        </div>
+        {/* Fade into page bg */}
+        <div className="absolute bottom-0 inset-x-0 h-6 bg-gradient-to-t from-[#f9f9ff] to-transparent pointer-events-none" />
+      </div>
 
-        {/* Property grid with suspense */}
+      {/* Property grid */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Suspense
           key={`${JSON.stringify(filters)}-${page}`}
           fallback={<PropertiesSkeletonGrid />}

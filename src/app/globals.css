@@ -187,6 +187,15 @@
   animation: gradient-shift 14s ease infinite;
 }
 
+.hero-shimmer-text {
+  background-image: linear-gradient(90deg, #FF5A1F 0%, #f59e0b 50%, #FF5A1F 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
 /* Delay helpers */
 .delay-75  { animation-delay: 75ms; }
 .delay-100 { animation-delay: 100ms; }
@@ -229,6 +238,75 @@
 
 ::view-transition-new(root) {
   animation-name: fadeInUp;
+}
+
+/* ─── Shadow tokens ──────────────────────────────────── */
+
+.shadow-card        { box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04); }
+.shadow-card-hover  { box-shadow: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.06); }
+.shadow-xl-coral    { box-shadow: 0 20px 60px rgba(255, 90, 31, 0.18); }
+
+/* ─── Mesh gradient backgrounds ──────────────────────── */
+
+.bg-mesh-warm {
+  background:
+    radial-gradient(at 30% 20%, rgba(255,90,31,0.08) 0px, transparent 60%),
+    radial-gradient(at 80% 70%, rgba(255,166,100,0.06) 0px, transparent 50%),
+    #f9f9ff;
+}
+
+/* ─── Glass card ──────────────────────────────────────── */
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.glass-dark {
+  background: rgba(10, 15, 30, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ─── Text balance ────────────────────────────────────── */
+
+.text-balance { text-wrap: balance; }
+
+/* ─── Global button tactile press feedback (Emil) ────── */
+
+button:not([disabled]):active,
+a[href]:active,
+[role="button"]:not([disabled]):active {
+  transform: scale(0.97);
+  transition: transform 100ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ─── Reduced Motion ──────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-float,
+  .animate-pulse-ring,
+  .animate-shimmer,
+  .animate-gradient,
+  .hero-shimmer-text {
+    animation: none !important;
+  }
+
+  /* Preserve opacity-only fades for comprehension */
+  .animate-fade-in {
+    animation: fadeIn 0.15s ease both !important;
+  }
 }
 
 /* ─── Scrollbar ───────────────────────────────────────── */

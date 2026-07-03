@@ -2,8 +2,11 @@
 
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { Search, MapPin, CalendarDays, Users } from "lucide-react"
+import { motion } from "framer-motion"
+import { Search, MapPin } from "lucide-react"
 import { ROUTES } from "@/lib/constants"
+
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
 
 interface HomeSearchProps {
   variant?: "hero" | "inline"
@@ -55,10 +58,20 @@ export default function PropertyFilters({ variant = "hero" }: HomeSearchProps) {
     )
   }
 
-  // ── Hero variant — Stitch pill search bar ─────────────────────────────────
+  // ── Hero variant — animated pill search bar ──────────────────────────────
   return (
-    <div className="w-full max-w-3xl mx-auto">
-      <div className="bg-white rounded-full shadow-2xl flex items-stretch overflow-hidden border border-white/20">
+    <motion.div
+      className="w-full max-w-3xl mx-auto"
+      initial={{ opacity: 0, y: 28, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.65, ease: EASE, delay: 0.2 }}
+    >
+      <motion.div
+        className="bg-white rounded-full flex items-stretch overflow-hidden border border-white/30"
+        style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.22), 0 2px 12px rgba(0,0,0,0.12)" }}
+        whileHover={{ boxShadow: "0 16px 56px rgba(0,0,0,0.28), 0 4px 20px rgba(0,0,0,0.16)" }}
+        transition={{ duration: 0.25 }}
+      >
 
         {/* Location */}
         <div className="flex-1 flex flex-col px-6 py-3 hover:bg-gray-50/60 transition-colors cursor-text border-r border-gray-100 min-w-0">
@@ -108,17 +121,20 @@ export default function PropertyFilters({ variant = "hero" }: HomeSearchProps) {
           </div>
         </div>
 
-        {/* Search button — orange circle */}
+        {/* Search button — animated orange circle */}
         <div className="flex items-center justify-center px-3 py-2 flex-shrink-0">
-          <button
+          <motion.button
             onClick={handleSearch}
-            className="h-11 w-11 rounded-full bg-primary flex items-center justify-center shadow-md hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all"
+            className="h-11 w-11 rounded-full bg-primary flex items-center justify-center shadow-lg"
             aria-label="Search"
+            whileHover={{ scale: 1.08, boxShadow: "0 8px 24px rgba(255,90,31,0.45)" }}
+            whileTap={{ scale: 0.92 }}
+            transition={{ type: "spring", stiffness: 400, damping: 22 }}
           >
             <Search className="h-5 w-5 text-white" />
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Mobile check-in/guests below */}
       <div className="flex sm:hidden gap-2 mt-2">
@@ -145,6 +161,6 @@ export default function PropertyFilters({ variant = "hero" }: HomeSearchProps) {
           />
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

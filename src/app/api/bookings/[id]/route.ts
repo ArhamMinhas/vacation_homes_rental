@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { getBookingById, updateBookingStatus, cancelBooking } from "@/services/booking.service"
 import { checkConfirmedBookingOverlap } from "@/services/availability.service"
+import { createBookingConfirmedNotification } from "@/services/notification.service"
 import { formatDate } from "@/utils/formatDate"
 import { logger } from "@/lib/logger"
 import type { BookingStatus } from "@/types/booking"
@@ -79,6 +80,9 @@ export async function PATCH(
       }
 
       const booking = await updateBookingStatus(id, status)
+      if (status === "confirmed") {
+        await createBookingConfirmedNotification(booking)
+      }
       return NextResponse.json({ booking })
     }
 

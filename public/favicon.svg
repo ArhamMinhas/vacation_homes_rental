@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Background: rounded square with coral gradient -->
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- Wave / horizon lines -->
+  <path d="M10 40 Q20 34 32 38 Q44 42 54 36" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+  <path d="M10 46 Q20 40 32 44 Q44 48 54 42" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.3"/>
+  <!-- House outline -->
+  <path d="M32 14 L46 26 L46 44 L18 44 L18 26 Z" fill="white" opacity="0.95"/>
+  <path d="M32 14 L18 26 L46 26 Z" fill="white" opacity="0.95"/>
+  <!-- Door -->
+  <rect x="26" y="32" width="12" height="12" rx="2" fill="url(#bg)" opacity="0.6"/>
+  <!-- Roof peak highlight -->
+  <path d="M32 16 L44 26" stroke="url(#shine)" stroke-width="1.5" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF7A3D"/>
+      <stop offset="100%" stop-color="#FF3D00"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="white" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>

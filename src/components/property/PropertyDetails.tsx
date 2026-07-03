@@ -119,13 +119,13 @@ export default function PropertyDetails({ property }: PropertyDetailsProps) {
         </div>
       )}
 
-      {/* LuxeStay Guarantee */}
+      {/* Coastal Horizon Guarantee */}
       <div className="rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/5 to-orange-50/80 p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-4">
           <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <Shield className="h-4 w-4 text-primary" />
           </div>
-          <h2 className="text-base font-semibold text-foreground">LuxeStay Guarantee</h2>
+          <h2 className="text-base font-semibold text-foreground">Coastal Horizon Guarantee</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[

@@ -19,7 +19,7 @@ import type { BookingStatus } from "@/types/booking"
 import type { Metadata } from "next"
 
 export const dynamic = "force-dynamic"
-export const metadata: Metadata = { title: "Admin Dashboard — LuxeStay" }
+export const metadata: Metadata = { title: "Admin Dashboard — Coastal Horizon" }
 
 const STATUS_CONFIG: Record<BookingStatus, { label: string; classes: string; dot: string }> = {
   pending:   { label: "Pending",   classes: "bg-amber-50 text-amber-700 border border-amber-200",     dot: "bg-amber-400"   },
@@ -129,7 +129,7 @@ export default async function AdminDashboardPage() {
 
             {recentBookings.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center py-14 text-center px-6">
-                <div className="text-3xl mb-3">📋</div>
+                <Building2 className="h-8 w-8 text-muted-foreground/40 mb-3" />
                 <p className="font-medium text-foreground text-sm">No bookings yet</p>
                 <p className="text-xs text-muted-foreground mt-1">Bookings will appear here once guests submit requests.</p>
               </div>
@@ -151,7 +151,7 @@ export default async function AdminDashboardPage() {
                           className="h-10 w-14 object-cover rounded-lg flex-shrink-0"
                         />
                       ) : (
-                        <div className="h-10 w-14 rounded-lg bg-muted flex items-center justify-center text-base flex-shrink-0">🏡</div>
+                        <div className="h-10 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0"><Building2 className="h-5 w-5 text-muted-foreground/40" /></div>
                       )}
 
                       <div className="min-w-0 flex-1">
@@ -205,7 +205,7 @@ export default async function AdminDashboardPage() {
 
             {recentProperties.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center py-14 text-center px-6">
-                <div className="text-3xl mb-3">🏡</div>
+                <Building2 className="h-8 w-8 text-muted-foreground/40 mb-3" />
                 <p className="font-medium text-foreground text-sm">No properties yet</p>
                 <p className="text-xs text-muted-foreground mt-1">Add your first property to get started.</p>
               </div>
@@ -222,7 +222,7 @@ export default async function AdminDashboardPage() {
                         className="h-20 w-28 object-cover rounded-xl flex-shrink-0 shadow-sm"
                       />
                     ) : (
-                      <div className="h-20 w-28 rounded-xl bg-muted flex items-center justify-center text-2xl flex-shrink-0">🏡</div>
+                      <div className="h-20 w-28 rounded-xl bg-muted flex items-center justify-center flex-shrink-0"><Building2 className="h-8 w-8 text-muted-foreground/40" /></div>
                     )}
                     {/* Info */}
                     <div className="min-w-0 flex-1">
@@ -317,3 +317,4 @@ export default async function AdminDashboardPage() {
     </div>
   )
 }
+

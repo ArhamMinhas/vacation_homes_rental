@@ -254,6 +254,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
 ```
 
 Important:
@@ -261,6 +263,41 @@ Important:
 ```text
 SUPABASE_SERVICE_ROLE_KEY must only be used on the server side.
 Do not expose it in frontend/client components.
+```
+
+### Payment and Notification Setup
+
+Confirmed bookings can create Stripe Checkout Sessions through:
+
+```text
+POST /api/payments/checkout
+```
+
+Recommended optional booking columns:
+
+```sql
+ALTER TABLE public.bookings
+ADD COLUMN IF NOT EXISTS stripe_checkout_session_id text,
+ADD COLUMN IF NOT EXISTS payment_status text DEFAULT 'unpaid';
+```
+
+Guest confirmation notifications are stored in an optional `notifications` table. If the table is not present, the app still shows inferred confirmation alerts from confirmed bookings.
+
+```sql
+CREATE TABLE IF NOT EXISTS public.notifications (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  booking_id uuid REFERENCES public.bookings(id) ON DELETE CASCADE,
+  type text NOT NULL DEFAULT 'system',
+  title text NOT NULL,
+  message text NOT NULL,
+  action_url text,
+  read_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS notifications_user_created_idx
+ON public.notifications (user_id, created_at DESC);
 ```
 
 ---

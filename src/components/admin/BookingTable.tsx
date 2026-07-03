@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, Users, Calendar, DollarSign, AlertTriangle } from "lucide-react"
+import { motion } from "framer-motion"
+import { Loader2, Users, Calendar, DollarSign, AlertTriangle, CalendarCheck, Building2 } from "lucide-react"
 import type { Booking, BookingStatus } from "@/types/booking"
 import { formatCurrency } from "@/utils/formatCurrency"
 import { formatDate } from "@/utils/formatDate"
@@ -95,7 +96,9 @@ export default function BookingTable({ bookings: initial }: BookingTableProps) {
   if (bookings.length === 0) {
     return (
       <div className="text-center py-16 rounded-xl border border-dashed border-border">
-        <div className="text-4xl mb-3">📋</div>
+        <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-3">
+          <CalendarCheck className="h-6 w-6 text-muted-foreground" />
+        </div>
         <p className="font-medium text-foreground">No bookings yet</p>
         <p className="text-sm text-muted-foreground mt-1">
           Bookings will appear here once guests submit requests.
@@ -108,29 +111,48 @@ export default function BookingTable({ bookings: initial }: BookingTableProps) {
     <>
       {/* ── Mobile: card list ───────────────────────────────────────────────── */}
       <div className="md:hidden space-y-3">
-        {bookings.map((booking) => (
-          <div
+        {bookings.map((booking, i) => (
+          <motion.div
             key={booking.id}
-            className="bg-card border border-border rounded-xl p-4 space-y-3 hover:border-primary/20 transition-colors"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.06, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/20 hover:shadow-sm transition-all duration-200"
           >
-            {/* Guest + status */}
-            <div className="flex items-start justify-between gap-3">
+            {/* Property image header strip */}
+            {booking.property?.images?.[0] ? (
+              <div className="relative h-20 w-full overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={booking.property.images[0]} alt={booking.property?.title ?? ''} className="h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <p className="absolute bottom-2 left-3 text-white text-xs font-semibold truncate max-w-[calc(100%-5rem)]">{booking.property?.title}</p>
+                <div className={`absolute bottom-2 right-3 flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${STATUS_COLORS[booking.status]}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[booking.status]}`} />
+                  {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                </div>
+              </div>
+            ) : (
+              <div className="h-10 bg-muted/40 flex items-center px-4 justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground font-medium">{booking.property?.title ?? '—'}</span>
+                </div>
+                <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${STATUS_COLORS[booking.status]}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[booking.status]}`} />
+                  {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                </div>
+              </div>
+            )}
+            <div className="p-4 space-y-3">
+            {/* Guest */}
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">
+                {booking.guest_name?.[0]?.toUpperCase() ?? '?'}
+              </div>
               <div className="min-w-0">
                 <p className="font-semibold text-sm text-foreground truncate">{booking.guest_name}</p>
                 <p className="text-xs text-muted-foreground truncate">{booking.guest_email}</p>
               </div>
-              <div className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border flex-shrink-0 ${STATUS_COLORS[booking.status]}`}>
-                <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[booking.status]}`} />
-                {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-              </div>
-            </div>
-
-            {/* Property */}
-            <div className="text-sm">
-              <span className="font-medium text-foreground">{booking.property?.title ?? "—"}</span>
-              {booking.property?.location && (
-                <span className="text-muted-foreground"> · {booking.property.location}</span>
-              )}
             </div>
 
             {/* Meta grid */}
@@ -162,7 +184,8 @@ export default function BookingTable({ bookings: initial }: BookingTableProps) {
               <span className="text-xs text-muted-foreground">Update status</span>
               <StatusSelect booking={booking} />
             </div>
-          </div>
+            </div>{/* end p-4 */}
+          </motion.div>
         ))}
       </div>
 
@@ -179,8 +202,12 @@ export default function BookingTable({ bookings: initial }: BookingTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {bookings.map((booking) => (
-              <TableRow key={booking.id} className="hover:bg-muted/30 transition-colors">
+            {bookings.map((booking, i) => (
+              <TableRow
+                key={booking.id}
+                className="hover:bg-muted/30 transition-colors"
+                style={{ animation: `fadeIn 0.35s ease both`, animationDelay: `${i * 50}ms` }}
+              >
                 <TableCell>
                   <p className="font-medium text-sm text-foreground">{booking.guest_name}</p>
                   <p className="text-xs text-muted-foreground">{booking.guest_email}</p>

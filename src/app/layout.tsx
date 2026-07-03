@@ -16,8 +16,13 @@ const outfit = Outfit({
 })
 
 export const metadata: Metadata = {
-  title: "LuxeStay — Vacation Homes Rental",
+  title: "Coastal Horizon — Vacation Homes Rental",
   description: "Discover your next coastal escape. Hand-picked vacation homes worldwide.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 }
 
 export default function RootLayout({

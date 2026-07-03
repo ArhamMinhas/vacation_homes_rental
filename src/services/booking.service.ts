@@ -1,4 +1,5 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server"
+import { logger } from "@/lib/logger"
 import type { Booking, BookingStatus } from "@/types/booking"
 import type { BookingInput } from "@/validations/booking.schema"
 
@@ -155,6 +156,43 @@ export async function cancelBooking(
     .eq("id", id)
     .eq("user_id", userId)
     .eq("status", "pending")
+  if (error) throw new Error(error.message)
+}
+
+export async function recordPaymentCheckoutAttempt(
+  bookingId: string,
+  sessionId: string
+): Promise<void> {
+  const supabase = createAdminClient()
+  const { error } = await supabase
+    .from("bookings")
+    .update({
+      stripe_checkout_session_id: sessionId,
+      payment_status: "checkout_started",
+    })
+    .eq("id", bookingId)
+
+  if (error) {
+    logger.warn("Payment checkout metadata was not stored", {
+      bookingId,
+      reason: error.message,
+    })
+  }
+}
+
+export async function markBookingPaid(
+  bookingId: string,
+  sessionId: string
+): Promise<void> {
+  const supabase = createAdminClient()
+  const { error } = await supabase
+    .from("bookings")
+    .update({
+      payment_status: "paid",
+      stripe_checkout_session_id: sessionId,
+    })
+    .eq("id", bookingId)
+
   if (error) throw new Error(error.message)
 }
 

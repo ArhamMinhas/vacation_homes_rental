@@ -1,9 +1,7 @@
 import { getAllBookings } from "@/services/booking.service"
 import AdminHeader from "@/components/admin/AdminHeader"
 import BookingTable from "@/components/admin/BookingTable"
-import { formatCurrency } from "@/utils/formatCurrency"
-import { CheckCircle2, Clock, DollarSign, XCircle } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { AnimatedStatCard } from "@/components/ui/animations"
 import type { Metadata } from "next"
 
 export const dynamic = "force-dynamic"
@@ -20,10 +18,10 @@ export default async function AdminBookingsPage() {
     .reduce((sum, b) => sum + b.total_price, 0)
 
   const stats = [
-    { label: "Pending",   value: pending,            icon: Clock,        color: "text-amber-600",   bg: "bg-amber-50 border-amber-200"   },
-    { label: "Confirmed", value: confirmed,           icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200"},
-    { label: "Cancelled", value: cancelled,           icon: XCircle,      color: "text-red-500",     bg: "bg-red-50 border-red-200"        },
-    { label: "Revenue",   value: formatCurrency(revenue), icon: DollarSign, color: "text-primary", bg: "bg-orange-50 border-orange-200"  },
+    { label: "Pending",   value: pending,   iconName: "Clock",        color: "text-amber-600",   bg: "bg-amber-50 border-amber-200"    },
+    { label: "Confirmed", value: confirmed, iconName: "CheckCircle2", color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200" },
+    { label: "Cancelled", value: cancelled, iconName: "XCircle",      color: "text-red-500",     bg: "bg-red-50 border-red-200"         },
+    { label: "Revenue",   value: revenue,   iconName: "DollarSign",   color: "text-primary",     bg: "bg-orange-50 border-orange-200",  prefix: "$" },
   ]
 
   return (
@@ -33,16 +31,19 @@ export default async function AdminBookingsPage() {
         description={`${bookings.length} total reservation${bookings.length !== 1 ? "s" : ""}`}
       />
 
-      {/* Quick stats strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {stats.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className={cn("rounded-xl border px-4 py-3 flex items-center gap-3", bg)}>
-            <Icon className={cn("h-4 w-4 flex-shrink-0", color)} />
-            <div>
-              <p className={cn("text-base font-bold leading-none", color)}>{value}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-            </div>
-          </div>
+        {stats.map(({ label, value, iconName, color, bg, prefix }, i) => (
+          <AnimatedStatCard
+            key={label}
+            label={label}
+            value={value}
+            iconName={iconName}
+            color={color}
+            bg={bg}
+            index={i}
+            isNumber
+            prefix={prefix}
+          />
         ))}
       </div>
 
